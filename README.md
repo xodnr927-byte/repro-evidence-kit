@@ -1,8 +1,20 @@
 # repro-evidence-kit
 
+[![CI](https://github.com/xodnr927-byte/repro-evidence-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/xodnr927-byte/repro-evidence-kit/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/xodnr927-byte/repro-evidence-kit)](https://github.com/xodnr927-byte/repro-evidence-kit/releases)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/xodnr927-byte/repro-evidence-kit)](LICENSE)
+
 A small command-line toolkit for reproducible artifact verification in binary analysis, security research, and automation workflows.
 
 It creates hash manifests, compares experiment outputs, and validates evidence bundles so results can be reviewed without relying on private source data.
+
+## Use cases
+
+- Review what changed during artifact-heavy CI or release automation.
+- Verify that a sandboxed experiment only produced explicitly allowed outputs.
+- Attach compact, hash-backed evidence bundles to pull requests or research notes.
+- Keep generated reports reviewable without publishing private input data.
 
 ## Features
 
@@ -42,9 +54,14 @@ repro-evidence verify sandbox-run before.json after.json --allow-added report.js
 
 The command exits `0` when all changes are allowed and `1` when unexpected changes are present.
 
-## Evidence bundle format
+## Documentation
 
-See [`docs/evidence-bundle-format.md`](docs/evidence-bundle-format.md) and [`schemas/evidence-bundle.schema.json`](schemas/evidence-bundle.schema.json).
+- [CLI reference](docs/cli.md)
+- [Tutorial](docs/tutorial.md)
+- [Evidence bundle format](docs/evidence-bundle-format.md)
+- [Maintainer workflow](docs/maintainer-workflow.md)
+- [Design principles](docs/design-principles.md)
+- [Roadmap](ROADMAP.md)
 
 ## Data policy
 
