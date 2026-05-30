@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "repro-evidence-kit"
+version = "0.1.0"
+description = "Reproducible artifact manifests, sandbox-output verification, and evidence-bundle validation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "xodnr927-byte" }]
+keywords = ["reproducibility", "artifact", "manifest", "sha256", "evidence", "binary-analysis"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+repro-evidence = "repro_evidence_kit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/xodnr927-byte/repro-evidence-kit"
+Issues = "https://github.com/xodnr927-byte/repro-evidence-kit/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/repro_evidence_kit"]

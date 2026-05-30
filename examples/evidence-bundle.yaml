@@ -1,0 +1,23 @@
+schema_version: '1.0'
+title: Synthetic artifact evidence example
+description: Dummy data generated for public examples; contains no proprietary source
+  material.
+inputs:
+- path: examples/sandbox-run/input.txt
+  sha256: 7d3f9b6284c6f36e77b425cac882e8fbbcc97a4727ec20790853076d0f463453
+  size: 6
+  role: input
+commands:
+- argv:
+  - python
+  - -c
+  - write result
+  cwd: .
+  exit_code: 0
+outputs:
+- path: examples/sandbox-run/result.txt
+  sha256: 5656fafa00d4f294bcb606cf4f7d4fa877390e46f583e8b3c8744ace104a31d1
+  size: 7
+  role: output
+notes:
+- All example files are synthetic.
