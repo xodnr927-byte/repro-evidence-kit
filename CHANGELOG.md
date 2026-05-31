@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 - 2026-05-31
 
 - Add Windows-style path separator normalization for manifest diff and sandbox verification.
 - Expand README maintainer positioning.

@@ -75,4 +75,4 @@ This repository is for generic reproducibility tooling. Do not add proprietary b
 
 ## Status
 
-`0.1.0` is an initial release candidate. The CLI and schema are intentionally small and conservative.
+`0.1.x` is an early release series. The CLI and schema are intentionally small and conservative.

@@ -17,7 +17,7 @@ def _csv_set(value: str | None) -> set[str]:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="repro-evidence", description="Reproducible artifact manifest and evidence-bundle tools.")
-    parser.add_argument("--version", action="version", version="repro-evidence 0.1.0")
+    parser.add_argument("--version", action="version", version="repro-evidence 0.1.1")
     sub = parser.add_subparsers(dest="command", required=True)
 
     manifest = sub.add_parser("manifest", help="Create or compare file manifests")
