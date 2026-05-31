@@ -1,5 +1,17 @@
 # CLI reference
 
+## Exit codes
+
+All commands use the same top-level exit-code contract:
+
+| Code | Meaning | Examples |
+| --- | --- | --- |
+| `0` | The command completed and the checked predicate passed. | Manifest written, manifests diffed, evidence bundle valid, sandbox output contains only allowed changes. |
+| `1` | The command completed and found an expected validation or verification failure. | Evidence bundle is structurally invalid, sandbox output contains unexpected added/changed/removed paths. |
+| `2` | The command could not complete because of an input, parsing, filesystem, or runtime error. | Missing JSON file, malformed manifest JSON, unreadable evidence file. |
+
+Use `1` as a CI policy failure and `2` as an infrastructure or invocation failure.
+
 ## `manifest create`
 
 Create a JSON manifest for a file or directory.
@@ -45,3 +57,5 @@ Validate a YAML or JSON evidence bundle.
 ```bash
 repro-evidence evidence validate examples/evidence-bundle.yaml
 ```
+
+Exit code `1` means the file was read successfully but the bundle failed validation. Exit code `2` means the file could not be read or parsed.
