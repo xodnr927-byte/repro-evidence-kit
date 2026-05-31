@@ -25,6 +25,8 @@ python -m repro_evidence_kit manifest create examples/dummy-binary -o /tmp/manif
 
 This repository's CI also runs a leakage audit that rejects project-specific or proprietary-sample markers.
 
+For copyable GitHub Actions snippets, see the [GitHub Actions cookbook](github-actions.md).
+
 ## Codex-assisted maintenance
 
 Useful Codex tasks for this project include:

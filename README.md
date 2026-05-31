@@ -32,8 +32,10 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 
 ## Install
 
+Until a package index release is published, install from the repository:
+
 ```bash
-pip install repro-evidence-kit
+pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.1.1"
 ```
 
 For local development:
@@ -66,6 +68,7 @@ The command exits `0` when all changes are allowed and `1` when unexpected chang
 - [Tutorial](docs/tutorial.md)
 - [Evidence bundle format](docs/evidence-bundle-format.md)
 - [Maintainer workflow](docs/maintainer-workflow.md)
+- [GitHub Actions cookbook](docs/github-actions.md)
 - [Design principles](docs/design-principles.md)
 - [Roadmap](ROADMAP.md)
 

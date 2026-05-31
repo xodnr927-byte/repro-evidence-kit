@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Document stable CLI exit-code meanings and add regression coverage.
+- Add a small GitHub Actions cookbook for maintainer CI usage.
+- Clarify source-based installation until a package index release exists.
+
 ## 0.1.1 - 2026-05-31
 
 - Add Windows-style path separator normalization for manifest diff and sandbox verification.

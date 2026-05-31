@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -18,6 +20,43 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 0)
             data = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(data["file_count"], 1)
+
+    def test_evidence_validate_invalid_bundle_returns_1(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bad.yaml"
+            output = root / "result.json"
+            bundle.write_text("title: Missing required fields\n", encoding="utf-8")
+            code = main(["evidence", "validate", str(bundle), "-o", str(output)])
+            self.assertEqual(code, 1)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertFalse(data["ok"])
+            self.assertIn("missing top-level field: inputs", data["errors"])
+
+    def test_verify_sandbox_unexpected_output_returns_1(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            before = root / "before.json"
+            after = root / "after.json"
+            output = root / "verify.json"
+            before.write_text(json.dumps({"files": []}), encoding="utf-8")
+            after.write_text(
+                json.dumps({"files": [{"path": "report.json", "size": 2, "sha256": "a" * 64}]}),
+                encoding="utf-8",
+            )
+            code = main(["verify", "sandbox-run", str(before), str(after), "-o", str(output)])
+            self.assertEqual(code, 1)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(data["unexpected"]["added"], ["report.json"])
+
+    def test_missing_input_file_returns_2(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = main(["manifest", "diff", str(root / "missing-before.json"), str(root / "missing-after.json")])
+            self.assertEqual(code, 2)
+            self.assertIn("error:", stderr.getvalue())
 
 
 if __name__ == "__main__":
