@@ -9,6 +9,12 @@ A small command-line toolkit for reproducible artifact verification in binary an
 
 It creates hash manifests, compares experiment outputs, and validates evidence bundles so results can be reviewed without relying on private source data.
 
+## Why this matters
+
+Generated artifacts are hard to review when the only proof is a large log, a private input tree, or a verbal claim that "nothing important changed." `repro-evidence-kit` keeps the review surface small: it records byte hashes, separates expected output changes from unexpected ones, and stores enough command context for another maintainer to rerun or challenge the evidence.
+
+The project is intentionally target-neutral. It should help maintainers in CI, security research, binary-analysis, data-processing, and automation workflows without requiring them to publish proprietary samples or project-specific case files.
+
 ## Use cases
 
 - Review what changed during artifact-heavy CI or release automation.

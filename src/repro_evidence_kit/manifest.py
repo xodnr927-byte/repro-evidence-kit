@@ -11,6 +11,11 @@ from typing import Any, Iterable
 MANIFEST_VERSION = "1.0"
 
 
+def normalize_manifest_path(path: object) -> str:
+    """Return the manifest's portable logical path form."""
+    return str(path).replace("\\", "/")
+
+
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -33,7 +38,7 @@ def create_manifest(root: Path, *, include_mtime: bool = False) -> dict[str, Any
     root = root.resolve()
     entries: list[dict[str, Any]] = []
     for file_path in iter_files(root):
-        rel = file_path.resolve().relative_to(root if root.is_dir() else root.parent).as_posix()
+        rel = normalize_manifest_path(file_path.resolve().relative_to(root if root.is_dir() else root.parent).as_posix())
         st = file_path.stat()
         item: dict[str, Any] = {
             "path": rel,
@@ -93,8 +98,8 @@ class ManifestDiff:
 
 
 def diff_manifests(before: dict[str, Any], after: dict[str, Any]) -> ManifestDiff:
-    before_files = {item["path"]: item for item in before.get("files", [])}
-    after_files = {item["path"]: item for item in after.get("files", [])}
+    before_files = {normalize_manifest_path(item["path"]): item for item in before.get("files", [])}
+    after_files = {normalize_manifest_path(item["path"]): item for item in after.get("files", [])}
     before_paths = set(before_files)
     after_paths = set(after_files)
     added = sorted(after_paths - before_paths)
