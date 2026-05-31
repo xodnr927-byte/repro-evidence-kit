@@ -10,6 +10,8 @@ repro-evidence manifest create PATH -o manifest.json
 
 Each file entry includes relative path, byte size, and SHA-256.
 
+Manifest paths are serialized with `/` separators so manifests stay reviewable across platforms.
+
 ## `manifest diff`
 
 Compare two manifests.
@@ -19,6 +21,8 @@ repro-evidence manifest diff before.json after.json -o diff.json
 ```
 
 The report groups paths into `added`, `removed`, `changed`, and `unchanged`.
+
+When comparing manifests, Windows-style `\` separators are treated as the same logical path separators as `/`.
 
 ## `verify sandbox-run`
 
@@ -31,6 +35,8 @@ repro-evidence verify sandbox-run before.json after.json \
 ```
 
 Comma-separated allowlists are accepted for added, changed, and removed paths.
+
+Allowlist paths use the same normalization as manifest diffs, so `reports\summary.json` and `reports/summary.json` match the same logical artifact.
 
 ## `evidence validate`
 
