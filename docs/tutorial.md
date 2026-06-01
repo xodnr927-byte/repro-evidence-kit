@@ -27,6 +27,12 @@ repro-evidence manifest diff before.json after.json
 
 The diff separates added, removed, changed, and unchanged paths.
 
+For a report that can be pasted into an issue or pull request, write Markdown:
+
+```bash
+repro-evidence manifest diff before.json after.json --format markdown -o diff.md
+```
+
 ## 4. Verify allowed changes
 
 If `report.txt` is the only expected new artifact:

@@ -36,6 +36,12 @@ The report groups paths into `added`, `removed`, `changed`, and `unchanged`.
 
 When comparing manifests, Windows-style `\` separators are treated as the same logical path separators as `/`.
 
+Use `--format markdown` when you want a review-friendly Markdown report instead of JSON:
+
+```bash
+repro-evidence manifest diff before.json after.json --format markdown -o diff.md
+```
+
 ## `verify sandbox-run`
 
 Verify that only explicitly allowed paths changed.

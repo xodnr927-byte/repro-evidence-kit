@@ -58,6 +58,24 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 2)
             self.assertIn("error:", stderr.getvalue())
 
+    def test_manifest_diff_markdown_cli(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            before = root / "before.json"
+            after = root / "after.json"
+            output = root / "diff.md"
+            before.write_text(json.dumps({"files": []}), encoding="utf-8")
+            after.write_text(
+                json.dumps({"files": [{"path": "report.md", "size": 2, "sha256": "a" * 64}]}),
+                encoding="utf-8",
+            )
+            code = main(["manifest", "diff", str(before), str(after), "--format", "markdown", "-o", str(output)])
+            self.assertEqual(code, 0)
+            text = output.read_text(encoding="utf-8")
+            self.assertIn("# Manifest diff", text)
+            self.assertIn("| Added | 1 |", text)
+            self.assertIn("- `report.md`", text)
+
 
 if __name__ == "__main__":
     unittest.main()
