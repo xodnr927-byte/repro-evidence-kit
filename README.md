@@ -54,6 +54,19 @@ repro-evidence manifest diff before.json before.json
 repro-evidence evidence validate examples/evidence-bundle.yaml
 ```
 
+For larger artifact trees, filter manifests with explicit include/exclude patterns:
+
+```bash
+repro-evidence manifest create artifacts --include reports --exclude "*.tmp" -o manifest.json
+```
+
+For stricter evidence-bundle checks, install the optional schema extra and validate against the checked-in JSON Schema:
+
+```bash
+pip install "repro-evidence-kit[schema]"
+repro-evidence evidence validate examples/evidence-bundle.yaml --schema
+```
+
 Sandbox verification compares a baseline manifest with an after-run manifest:
 
 ```bash
