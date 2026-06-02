@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .evidence import load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema
 from .manifest import create_manifest, diff_manifests, load_json, write_json, write_text
-from .verify import verify_sandbox_output
+from .verify import sandbox_result_as_junit, verify_sandbox_output
 
 
 def _csv_set(value: str | None) -> set[str]:
@@ -49,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     sandbox.add_argument("--allow-added", help="Comma-separated path allowlist")
     sandbox.add_argument("--allow-changed", help="Comma-separated path allowlist")
     sandbox.add_argument("--allow-removed", help="Comma-separated path allowlist")
+    sandbox.add_argument("--format", choices=("json", "junit"), default="json")
     sandbox.add_argument("-o", "--output", type=Path)
 
     evidence = sub.add_parser("evidence", help="Validate evidence bundles")
@@ -90,7 +91,10 @@ def main(argv: list[str] | None = None) -> int:
                 allow_changed=_csv_set(args.allow_changed),
                 allow_removed=_csv_set(args.allow_removed),
             )
-            write_json(result, args.output)
+            if args.format == "junit":
+                write_text(sandbox_result_as_junit(result), args.output)
+            else:
+                write_json(result, args.output)
             return 0 if result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "validate":
             bundle = load_evidence(args.bundle)

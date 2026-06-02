@@ -48,7 +48,6 @@ jobs:
           path: manifest.json
 ```
 
-
 ## Combine schema validation with filtered manifests
 
 Use this recipe when a workflow produces a large artifact tree but reviewers only need a compact manifest for stable outputs plus schema-backed evidence metadata. The example creates synthetic files during the job and keeps the manifest target-neutral.
@@ -117,3 +116,41 @@ jobs:
 ```
 
 Unexpected added, changed, or removed paths produce exit code `1`, which fails the job as a policy failure.
+
+## Upload sandbox verification as JUnit XML
+
+Use this when your CI dashboard or a test-report action can display JUnit XML. GitHub Actions does not render JUnit XML by itself, so this recipe uploads the report as an artifact and leaves rendering to your chosen report consumer.
+
+```yaml
+name: Sandbox verification report
+
+on:
+  pull_request:
+
+jobs:
+  verify-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e .
+      - run: mkdir -p sandbox && printf 'input\n' > sandbox/input.txt
+      - run: python -m repro_evidence_kit manifest create sandbox -o before.json
+      - run: printf '{"ok": true}\n' > sandbox/report.json
+      - run: python -m repro_evidence_kit manifest create sandbox -o after.json
+      - name: Write JUnit report
+        run: |
+          python -m repro_evidence_kit verify sandbox-run before.json after.json \
+            --allow-added report.json \
+            --format junit \
+            -o sandbox-verification.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandbox-verification-junit
+          path: sandbox-verification.xml
+```
+
+The JUnit output keeps the same exit-code behavior as JSON: unexpected changes still return `1` and fail the job. The XML report contains one testcase and one failure when the sandbox predicate fails.
