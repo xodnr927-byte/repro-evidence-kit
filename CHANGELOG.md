@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-06-02
+
 - Add JUnit XML output for `verify sandbox-run` CI report consumers.
 - Add a signed evidence bundles design note that defines the sidecar-first support boundary.
 
