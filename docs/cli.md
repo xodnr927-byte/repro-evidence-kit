@@ -76,4 +76,15 @@ Validate a YAML or JSON evidence bundle.
 repro-evidence evidence validate examples/evidence-bundle.yaml
 ```
 
-Exit code `1` means the file was read successfully but the bundle failed validation. Exit code `2` means the file could not be read or parsed.
+The default validator is lightweight and has no dependency beyond the base package. It checks required top-level fields, artifact `path`/`sha256` presence, and command shape. Use it for fast local checks and low-friction CI.
+
+For stricter JSON Schema validation, install the optional schema extra and pass `--schema`:
+
+```bash
+pip install "repro-evidence-kit[schema]"
+repro-evidence evidence validate examples/evidence-bundle.yaml --schema
+```
+
+Schema-backed validation uses `schemas/evidence-bundle.schema.json` and additionally enforces constraints such as SHA-256 hex format and numeric size bounds. Use `--schema-path custom.schema.json` with `--schema` to test a local schema variant.
+
+Exit code `1` means the file was read successfully but the bundle failed validation. Exit code `2` means the file could not be read, parsed, or schema validation was requested without the optional dependency.

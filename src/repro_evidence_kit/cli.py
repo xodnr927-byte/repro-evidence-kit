@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .evidence import load_evidence, validate_evidence_bundle
+from .evidence import load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema
 from .manifest import create_manifest, diff_manifests, load_json, write_json, write_text
 from .verify import verify_sandbox_output
 
@@ -55,6 +55,8 @@ def build_parser() -> argparse.ArgumentParser:
     evidence_sub = evidence.add_subparsers(dest="evidence_command", required=True)
     val = evidence_sub.add_parser("validate", help="Validate an evidence bundle YAML/JSON file")
     val.add_argument("bundle", type=Path)
+    val.add_argument("--schema", action="store_true", help="Validate with schemas/evidence-bundle.schema.json using the optional jsonschema dependency")
+    val.add_argument("--schema-path", type=Path, help="Use a custom JSON Schema path with --schema")
     val.add_argument("-o", "--output", type=Path)
     return parser
 
@@ -91,7 +93,8 @@ def main(argv: list[str] | None = None) -> int:
             write_json(result, args.output)
             return 0 if result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "validate":
-            result = validate_evidence_bundle(load_evidence(args.bundle))
+            bundle = load_evidence(args.bundle)
+            result = validate_evidence_bundle_schema(bundle, args.schema_path) if args.schema else validate_evidence_bundle(bundle)
             write_json(result, args.output)
             return 0 if result["ok"] else 1
     except Exception as exc:

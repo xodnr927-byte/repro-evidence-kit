@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +9,13 @@ try:
     import yaml
 except Exception:  # pragma: no cover
     yaml = None
+
+try:
+    from jsonschema import Draft202012Validator
+except Exception:  # pragma: no cover
+    Draft202012Validator = None
+
+REPO_SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "evidence-bundle.schema.json"
 
 REQUIRED_TOP_LEVEL = {"schema_version", "title", "inputs", "commands", "outputs"}
 REQUIRED_ARTIFACT_FIELDS = {"path", "sha256"}
@@ -56,3 +64,39 @@ def validate_evidence_bundle(data: dict[str, Any]) -> dict[str, Any]:
                 elif "argv" not in item and "command" not in item:
                     errors.append(f"commands[{i}] missing field: argv or command")
     return {"ok": not errors, "errors": errors}
+
+
+def validate_evidence_bundle_schema(data: dict[str, Any], schema_path: Path | None = None) -> dict[str, Any]:
+    if Draft202012Validator is None:
+        raise ValueError("schema validation requires the optional 'jsonschema' dependency; install repro-evidence-kit[schema]")
+    schema_file = schema_path or default_schema_path()
+    schema = load_json_schema(schema_file)
+    validator = Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(data), key=lambda error: list(error.path))
+    return {
+        "ok": not errors,
+        "errors": [format_schema_error(error) for error in errors],
+        "validator": "jsonschema Draft 2020-12",
+        "schema_path": str(schema_file),
+    }
+
+
+def default_schema_path() -> Path:
+    if REPO_SCHEMA_PATH.exists():
+        return REPO_SCHEMA_PATH
+    return Path(str(resources.files("repro_evidence_kit.schemas") / "evidence-bundle.schema.json"))
+
+
+def load_json_schema(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as f:
+        schema = json.load(f)
+    if not isinstance(schema, dict):
+        raise ValueError(f"schema must be a JSON object: {path}")
+    return schema
+
+
+def format_schema_error(error: Any) -> str:
+    location = "/".join(str(part) for part in error.path)
+    if not location:
+        location = "<root>"
+    return f"{location}: {error.message}"

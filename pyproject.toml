@@ -26,7 +26,8 @@ classifiers = [
 dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "jsonschema>=4.0"]
+schema = ["jsonschema>=4.0"]
 
 [project.scripts]
 repro-evidence = "repro_evidence_kit.cli:main"
