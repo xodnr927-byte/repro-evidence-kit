@@ -81,7 +81,7 @@ The command exits `0` when all changes are allowed and `1` when unexpected chang
 - [Tutorial](docs/tutorial.md)
 - [Evidence bundle format](docs/evidence-bundle-format.md)
 - [Maintainer workflow](docs/maintainer-workflow.md)
-- [GitHub Actions cookbook](docs/github-actions.md)
+- [GitHub Actions cookbook](docs/github-actions.md) — CI recipes for validation, manifests, sandbox checks, and schema-backed filtered workflows.
 - [Design principles](docs/design-principles.md)
 - [Roadmap](ROADMAP.md)
 
