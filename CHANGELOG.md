@@ -2,11 +2,13 @@
 
 ## Unreleased
 
+## 0.1.2 - 2026-06-02
+
 - Add optional JSON Schema validation for evidence bundles.
 - Add include/exclude filters for manifest creation.
 - Add Markdown output for `manifest diff` reports.
 - Document stable CLI exit-code meanings and add regression coverage.
-- Add a small GitHub Actions cookbook for maintainer CI usage.
+- Expand GitHub Actions cookbook coverage for schema-backed filtered manifest workflows.
 - Clarify source-based installation until a package index release exists.
 
 ## 0.1.1 - 2026-05-31
