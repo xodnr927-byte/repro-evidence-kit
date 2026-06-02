@@ -4,6 +4,7 @@ import contextlib
 import io
 import json
 import tempfile
+import xml.etree.ElementTree as ET
 import unittest
 from pathlib import Path
 
@@ -101,6 +102,23 @@ class CliTests(unittest.TestCase):
             self.assertEqual([item["path"] for item in data["files"]], ["reports/keep.txt"])
             self.assertEqual(data["filters"]["include"], ["reports"])
             self.assertEqual(data["filters"]["exclude"], ["*.log"])
+
+    def test_verify_sandbox_junit_output_keeps_failure_exit_code(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            before = root / "before.json"
+            after = root / "after.json"
+            output = root / "verify.xml"
+            before.write_text(json.dumps({"files": []}), encoding="utf-8")
+            after.write_text(
+                json.dumps({"files": [{"path": "report.json", "size": 2, "sha256": "a" * 64}]}),
+                encoding="utf-8",
+            )
+            code = main(["verify", "sandbox-run", str(before), str(after), "--format", "junit", "-o", str(output)])
+            self.assertEqual(code, 1)
+            root_xml = ET.fromstring(output.read_text(encoding="utf-8"))
+            self.assertEqual(root_xml.attrib["failures"], "1")
+            self.assertIn("report.json", root_xml.findtext("./testcase/failure") or "")
 
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_validate_schema_cli_returns_1_for_schema_failure(self):

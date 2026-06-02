@@ -19,7 +19,7 @@ These are implemented on `main` and are candidates for the next `v0.1.x` release
 
 ## Later ideas
 
-- SARIF or JUnit output for CI integrations.
+- SARIF output for CI code-scanning integrations.
 - Signed evidence bundle support.
 
 ## Non-goals

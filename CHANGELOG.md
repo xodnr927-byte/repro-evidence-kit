@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add JUnit XML output for `verify sandbox-run` CI report consumers.
+
 ## 0.1.2 - 2026-06-02
 
 - Add optional JSON Schema validation for evidence bundles.

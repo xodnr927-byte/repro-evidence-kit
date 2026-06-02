@@ -68,6 +68,17 @@ Comma-separated allowlists are accepted for added, changed, and removed paths.
 
 Allowlist paths use the same normalization as manifest diffs, so `reports\summary.json` and `reports/summary.json` match the same logical artifact.
 
+Use `--format junit` when a CI system or test-report action expects JUnit XML:
+
+```bash
+repro-evidence verify sandbox-run before.json after.json \
+  --allow-added report.json \
+  --format junit \
+  -o sandbox-verification.xml
+```
+
+The JUnit report has one testcase named `sandbox-run`. Unexpected added, changed, or removed paths are rendered as one failure. This is a CI reporting adapter for the sandbox verification predicate; it is not a full test suite and does not change the JSON output contract.
+
 ## `evidence validate`
 
 Validate a YAML or JSON evidence bundle.
