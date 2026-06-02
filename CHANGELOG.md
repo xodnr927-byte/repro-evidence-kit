@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add Markdown output for `manifest diff` reports.
 - Document stable CLI exit-code meanings and add regression coverage.
 - Add a small GitHub Actions cookbook for maintainer CI usage.
 - Clarify source-based installation until a package index release exists.

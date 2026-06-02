@@ -75,6 +75,14 @@ def write_json(data: Any, path: Path | None) -> None:
         path.write_text(text, encoding="utf-8")
 
 
+def write_text(text: str, path: Path | None) -> None:
+    if path is None:
+        print(text, end="")
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+
 @dataclass(frozen=True)
 class ManifestDiff:
     added: list[str]
@@ -95,6 +103,34 @@ class ManifestDiff:
             "changed": self.changed,
             "unchanged": self.unchanged,
         }
+
+    def as_markdown(self) -> str:
+        lines = [
+            "# Manifest diff",
+            "",
+            "## Summary",
+            "",
+            "| Status | Count |",
+            "| --- | ---: |",
+            f"| Added | {len(self.added)} |",
+            f"| Removed | {len(self.removed)} |",
+            f"| Changed | {len(self.changed)} |",
+            f"| Unchanged | {len(self.unchanged)} |",
+            "",
+        ]
+        for title, paths in (
+            ("Added", self.added),
+            ("Removed", self.removed),
+            ("Changed", self.changed),
+            ("Unchanged", self.unchanged),
+        ):
+            lines.extend([f"## {title}", ""])
+            if paths:
+                lines.extend(f"- `{path}`" for path in paths)
+            else:
+                lines.append("_None._")
+            lines.append("")
+        return "\n".join(lines) + "\n"
 
 
 def diff_manifests(before: dict[str, Any], after: dict[str, Any]) -> ManifestDiff:

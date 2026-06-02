@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .evidence import load_evidence, validate_evidence_bundle
-from .manifest import create_manifest, diff_manifests, load_json, write_json
+from .manifest import create_manifest, diff_manifests, load_json, write_json, write_text
 from .verify import verify_sandbox_output
 
 
@@ -30,6 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     diff = manifest_sub.add_parser("diff", help="Compare two JSON manifests")
     diff.add_argument("before", type=Path)
     diff.add_argument("after", type=Path)
+    diff.add_argument("--format", choices=("json", "markdown"), default="json")
     diff.add_argument("-o", "--output", type=Path)
 
     verify = sub.add_parser("verify", help="Verify experiment/sandbox outputs")
@@ -57,8 +58,11 @@ def main(argv: list[str] | None = None) -> int:
             write_json(create_manifest(args.path, include_mtime=args.include_mtime), args.output)
             return 0
         if args.command == "manifest" and args.manifest_command == "diff":
-            result = diff_manifests(load_json(args.before), load_json(args.after)).as_dict()
-            write_json(result, args.output)
+            result = diff_manifests(load_json(args.before), load_json(args.after))
+            if args.format == "markdown":
+                write_text(result.as_markdown(), args.output)
+            else:
+                write_json(result.as_dict(), args.output)
             return 0
         if args.command == "verify" and args.verify_command == "sandbox-run":
             result = verify_sandbox_output(

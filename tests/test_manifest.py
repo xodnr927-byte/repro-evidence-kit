@@ -41,6 +41,21 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(diff["added"], [])
         self.assertEqual(diff["removed"], [])
 
+    def test_diff_formats_markdown_report(self):
+        before = {"files": [{"path": "old.txt", "size": 1, "sha256": "0" * 64}]}
+        after = {
+            "files": [
+                {"path": "old.txt", "size": 2, "sha256": "1" * 64},
+                {"path": "new.txt", "size": 1, "sha256": "2" * 64},
+            ]
+        }
+        markdown = diff_manifests(before, after).as_markdown()
+        self.assertIn("# Manifest diff", markdown)
+        self.assertIn("| Added | 1 |", markdown)
+        self.assertIn("| Changed | 1 |", markdown)
+        self.assertIn("- `new.txt`", markdown)
+        self.assertIn("- `old.txt`", markdown)
+
 
 if __name__ == "__main__":
     unittest.main()
