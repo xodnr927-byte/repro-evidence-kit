@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 MANIFEST_VERSION = "1.0"
 
@@ -34,11 +35,40 @@ def iter_files(root: Path) -> Iterable[Path]:
             yield Path(dirpath) / name
 
 
-def create_manifest(root: Path, *, include_mtime: bool = False) -> dict[str, Any]:
+def normalize_filter_patterns(patterns: Sequence[str] | None) -> list[str]:
+    if not patterns:
+        return []
+    return sorted({normalize_manifest_path(pattern.strip()) for pattern in patterns if pattern.strip()})
+
+
+def path_matches_filter(path: str, pattern: str) -> bool:
+    pattern = normalize_manifest_path(pattern)
+    return path == pattern or path.startswith(f"{pattern.rstrip('/')}/") or fnmatch.fnmatchcase(path, pattern)
+
+
+def path_selected(path: str, *, include: Sequence[str], exclude: Sequence[str]) -> bool:
+    if include and not any(path_matches_filter(path, pattern) for pattern in include):
+        return False
+    if exclude and any(path_matches_filter(path, pattern) for pattern in exclude):
+        return False
+    return True
+
+
+def create_manifest(
+    root: Path,
+    *,
+    include_mtime: bool = False,
+    include: Sequence[str] | None = None,
+    exclude: Sequence[str] | None = None,
+) -> dict[str, Any]:
     root = root.resolve()
+    include_patterns = normalize_filter_patterns(include)
+    exclude_patterns = normalize_filter_patterns(exclude)
     entries: list[dict[str, Any]] = []
     for file_path in iter_files(root):
         rel = normalize_manifest_path(file_path.resolve().relative_to(root if root.is_dir() else root.parent).as_posix())
+        if not path_selected(rel, include=include_patterns, exclude=exclude_patterns):
+            continue
         st = file_path.stat()
         item: dict[str, Any] = {
             "path": rel,
@@ -48,7 +78,7 @@ def create_manifest(root: Path, *, include_mtime: bool = False) -> dict[str, Any
         if include_mtime:
             item["mtime_ns"] = st.st_mtime_ns
         entries.append(item)
-    return {
+    manifest: dict[str, Any] = {
         "manifest_version": MANIFEST_VERSION,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "root_name": root.name,
@@ -56,6 +86,14 @@ def create_manifest(root: Path, *, include_mtime: bool = False) -> dict[str, Any
         "total_bytes": sum(e["size"] for e in entries),
         "files": entries,
     }
+    if include_patterns or exclude_patterns:
+        manifest["filters"] = {
+            "include": include_patterns,
+            "exclude": exclude_patterns,
+            "order": "include_then_exclude",
+            "pattern_syntax": "POSIX-style manifest-relative glob or subtree path",
+        }
+    return manifest
 
 
 def load_json(path: Path) -> dict[str, Any]:

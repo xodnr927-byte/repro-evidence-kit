@@ -15,6 +15,12 @@ def _csv_set(value: str | None) -> set[str]:
     return {part.strip() for part in value.split(",") if part.strip()}
 
 
+def _csv_list(values: list[str] | None) -> list[str]:
+    if not values:
+        return []
+    return [part.strip() for value in values for part in value.split(",") if part.strip()]
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="repro-evidence", description="Reproducible artifact manifest and evidence-bundle tools.")
     parser.add_argument("--version", action="version", version="repro-evidence 0.1.1")
@@ -26,6 +32,8 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("path", type=Path)
     create.add_argument("-o", "--output", type=Path)
     create.add_argument("--include-mtime", action="store_true")
+    create.add_argument("--include", action="append", help="Manifest-relative glob or subtree path to include; may be repeated or comma-separated")
+    create.add_argument("--exclude", action="append", help="Manifest-relative glob or subtree path to exclude after includes; may be repeated or comma-separated")
 
     diff = manifest_sub.add_parser("diff", help="Compare two JSON manifests")
     diff.add_argument("before", type=Path)
@@ -55,7 +63,15 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         if args.command == "manifest" and args.manifest_command == "create":
-            write_json(create_manifest(args.path, include_mtime=args.include_mtime), args.output)
+            write_json(
+                create_manifest(
+                    args.path,
+                    include_mtime=args.include_mtime,
+                    include=_csv_list(args.include),
+                    exclude=_csv_list(args.exclude),
+                ),
+                args.output,
+            )
             return 0
         if args.command == "manifest" and args.manifest_command == "diff":
             result = diff_manifests(load_json(args.before), load_json(args.after))
