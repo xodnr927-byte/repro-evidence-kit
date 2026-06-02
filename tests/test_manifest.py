@@ -56,6 +56,30 @@ class ManifestTests(unittest.TestCase):
         self.assertIn("- `new.txt`", markdown)
         self.assertIn("- `old.txt`", markdown)
 
+    def test_create_manifest_filters_include_exclude_and_metadata(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep").mkdir()
+            (root / "keep" / "result.txt").write_text("result", encoding="utf-8")
+            (root / "keep" / "debug.tmp").write_text("debug", encoding="utf-8")
+            (root / "cache").mkdir()
+            (root / "cache" / "noise.txt").write_text("noise", encoding="utf-8")
+            manifest = create_manifest(root, include=["keep"], exclude=["*.tmp"])
+        self.assertEqual([item["path"] for item in manifest["files"]], ["keep/result.txt"])
+        self.assertEqual(manifest["file_count"], 1)
+        self.assertEqual(manifest["filters"]["include"], ["keep"])
+        self.assertEqual(manifest["filters"]["exclude"], ["*.tmp"])
+        self.assertEqual(manifest["filters"]["order"], "include_then_exclude")
+
+    def test_create_manifest_default_unfiltered_behavior_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            (root / "noise.tmp").write_text("noise", encoding="utf-8")
+            manifest = create_manifest(root)
+        self.assertEqual([item["path"] for item in manifest["files"]], ["keep.txt", "noise.tmp"])
+        self.assertNotIn("filters", manifest)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -24,6 +24,18 @@ Each file entry includes relative path, byte size, and SHA-256.
 
 Manifest paths are serialized with `/` separators so manifests stay reviewable across platforms.
 
+Use `--include` and `--exclude` to filter large artifact trees by manifest-relative path:
+
+```bash
+repro-evidence manifest create artifacts \
+  --include reports \
+  --include "*.json" \
+  --exclude "*.tmp" \
+  -o manifest.json
+```
+
+Filters are deterministic and use POSIX-style manifest-relative globs or subtree paths. Includes run first; when at least one include is supplied, only matching files remain. Excludes run after includes and remove matching files. Repeated flags and comma-separated values are accepted. When filters are used, the manifest records normalized include/exclude patterns in a `filters` metadata object.
+
 ## `manifest diff`
 
 Compare two manifests.

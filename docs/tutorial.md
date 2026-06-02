@@ -10,6 +10,17 @@ repro-evidence manifest create examples/sandbox-run -o before.json
 
 The manifest records relative paths, file sizes, and SHA-256 hashes.
 
+For a larger tree, narrow the manifest with include/exclude filters:
+
+```bash
+repro-evidence manifest create examples/sandbox-run \
+  --include "*.txt" \
+  --exclude "*.tmp" \
+  -o before.json
+```
+
+Includes are applied first, excludes second, and the active filter patterns are written into manifest metadata for reproducibility.
+
 ## 2. Run an experiment
 
 For a real workflow, this would be a build, parser, analysis script, or sandboxed automation step. For a minimal local example:

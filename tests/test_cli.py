@@ -76,6 +76,31 @@ class CliTests(unittest.TestCase):
             self.assertIn("| Added | 1 |", text)
             self.assertIn("- `report.md`", text)
 
+    def test_manifest_create_cli_include_exclude_filters(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "reports").mkdir()
+            (root / "reports" / "keep.txt").write_text("keep", encoding="utf-8")
+            (root / "reports" / "skip.log").write_text("skip", encoding="utf-8")
+            (root / "cache.txt").write_text("cache", encoding="utf-8")
+            output = root / "manifest.json"
+            code = main([
+                "manifest",
+                "create",
+                str(root),
+                "--include",
+                "reports",
+                "--exclude",
+                "*.log",
+                "-o",
+                str(output),
+            ])
+            self.assertEqual(code, 0)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual([item["path"] for item in data["files"]], ["reports/keep.txt"])
+            self.assertEqual(data["filters"]["include"], ["reports"])
+            self.assertEqual(data["filters"]["exclude"], ["*.log"])
+
 
 if __name__ == "__main__":
     unittest.main()
