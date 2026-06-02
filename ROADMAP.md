@@ -15,12 +15,12 @@ These are implemented on `main` and are candidates for the next `v0.1.x` release
 - Keep examples synthetic-only.
 - Improve README, tutorials, and cookbook examples as new workflows land.
 - Prepare compact release notes for the next `v0.1.x` release.
+- Expand CI cookbook coverage for schema validation and filtered manifest workflows.
 
 ## Later ideas
 
 - SARIF or JUnit output for CI integrations.
 - Signed evidence bundle support.
-- Additional CI cookbook recipes for schema validation and filtered manifests.
 
 ## Non-goals
 
