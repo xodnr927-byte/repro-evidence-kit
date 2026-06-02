@@ -29,3 +29,8 @@ The format is intentionally small. It is not a provenance database and does not 
 `repro-evidence evidence validate BUNDLE --schema` uses `schemas/evidence-bundle.schema.json` through the optional `jsonschema` dependency. Use schema-backed validation in CI when maintainers want stricter contract checks such as SHA-256 hex formatting and numeric bounds.
 
 The schema path can be overridden for local experiments with `--schema-path`, but repository CI should use the checked-in schema by default.
+
+
+## Signed bundle design
+
+Unsigned evidence bundles remain the stable default. Optional signed-bundle support is being scoped in [Signed evidence bundles design note](signed-bundles.md). The design keeps signatures as a sidecar concept first so validation can continue to support unsigned bundles without a breaking schema change.
