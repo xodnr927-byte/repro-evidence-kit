@@ -27,7 +27,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 - Create deterministic SHA-256 manifests for files or filtered directory trees.
 - Diff two manifests to identify added, removed, changed, and unchanged artifacts.
 - Verify sandbox/experiment outputs against explicit allowlists.
-- Validate simple YAML or JSON evidence bundles.
+- Validate simple YAML or JSON evidence bundles, with optional JSON Schema checks.
 - Includes only synthetic public examples.
 
 ## Install

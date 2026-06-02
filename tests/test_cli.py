@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from repro_evidence_kit.cli import main
+from repro_evidence_kit.evidence import Draft202012Validator
 
 
 class CliTests(unittest.TestCase):
@@ -100,6 +101,25 @@ class CliTests(unittest.TestCase):
             self.assertEqual([item["path"] for item in data["files"]], ["reports/keep.txt"])
             self.assertEqual(data["filters"]["include"], ["reports"])
             self.assertEqual(data["filters"]["exclude"], ["*.log"])
+
+    @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
+    def test_evidence_validate_schema_cli_returns_1_for_schema_failure(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.json"
+            output = root / "result.json"
+            bundle.write_text(json.dumps({
+                "schema_version": "1.0",
+                "title": "Example",
+                "inputs": [{"path": "input.bin", "sha256": "not-a-hex-digest"}],
+                "commands": [{"argv": ["tool", "input.bin"]}],
+                "outputs": [{"path": "output.bin", "sha256": "b" * 64}],
+            }), encoding="utf-8")
+            code = main(["evidence", "validate", str(bundle), "--schema", "-o", str(output)])
+            self.assertEqual(code, 1)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertFalse(data["ok"])
+            self.assertEqual(data["validator"], "jsonschema Draft 2020-12")
 
 
 if __name__ == "__main__":
