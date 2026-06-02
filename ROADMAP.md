@@ -20,7 +20,7 @@ These are implemented on `main` and are candidates for the next `v0.1.x` release
 ## Later ideas
 
 - SARIF output for CI code-scanning integrations.
-- Signed evidence bundle support.
+- Signed evidence bundle implementation after the sidecar design note is reviewed.
 
 ## Non-goals
 
