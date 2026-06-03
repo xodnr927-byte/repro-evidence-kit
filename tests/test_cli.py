@@ -120,6 +120,55 @@ class CliTests(unittest.TestCase):
             self.assertEqual(root_xml.attrib["failures"], "1")
             self.assertIn("report.json", root_xml.findtext("./testcase/failure") or "")
 
+    def test_evidence_sign_and_verify_signature_cli(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            signature = root / "bundle.yaml.sig.json"
+            verify_output = root / "verify-signature.json"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+
+            sign_code = main(["evidence", "sign", str(bundle), "--key", str(key), "--key-hint", "local-test", "-o", str(signature)])
+            verify_code = main([
+                "evidence",
+                "verify-signature",
+                str(bundle),
+                "--signature",
+                str(signature),
+                "--key",
+                str(key),
+                "-o",
+                str(verify_output),
+            ])
+
+            self.assertEqual(sign_code, 0)
+            self.assertEqual(verify_code, 0)
+            sidecar = json.loads(signature.read_text(encoding="utf-8"))
+            result = json.loads(verify_output.read_text(encoding="utf-8"))
+            self.assertEqual(sidecar["algorithm"], "hmac-sha256")
+            self.assertTrue(result["ok"])
+
+    def test_evidence_verify_signature_cli_returns_1_for_payload_mismatch(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            signature = root / "bundle.yaml.sig.json"
+            output = root / "verify-signature.json"
+            bundle.write_text("title: Before\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            self.assertEqual(main(["evidence", "sign", str(bundle), "--key", str(key), "-o", str(signature)]), 0)
+            bundle.write_text("title: After\n", encoding="utf-8")
+
+            code = main(["evidence", "verify-signature", str(bundle), "--signature", str(signature), "--key", str(key), "-o", str(output)])
+
+            self.assertEqual(code, 1)
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertFalse(result["ok"])
+            self.assertIn("payload_sha256 mismatch", result["errors"])
+
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_validate_schema_cli_returns_1_for_schema_failure(self):
         with tempfile.TemporaryDirectory() as td:

@@ -28,6 +28,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 - Diff two manifests to identify added, removed, changed, and unchanged artifacts.
 - Verify sandbox/experiment outputs against explicit allowlists, with optional JUnit XML for CI report consumers.
 - Validate simple YAML or JSON evidence bundles, with optional JSON Schema checks.
+- Sign and verify evidence bundle sidecars with a local-key tamper-detection prototype.
 - Includes only synthetic public examples.
 
 ## Install
@@ -65,6 +66,15 @@ For stricter evidence-bundle checks, install the optional schema extra and valid
 ```bash
 pip install "repro-evidence-kit[schema]"
 repro-evidence evidence validate examples/evidence-bundle.yaml --schema
+```
+
+
+Signed bundle sidecars are optional. For a local tamper-detection prototype, create or provide local trust material and keep it out of git:
+
+```bash
+printf 'synthetic local test key only\n' > local-test.key
+repro-evidence evidence sign examples/evidence-bundle.yaml --key local-test.key -o evidence-bundle.yaml.sig.json
+repro-evidence evidence verify-signature examples/evidence-bundle.yaml --signature evidence-bundle.yaml.sig.json --key local-test.key
 ```
 
 Sandbox verification compares a baseline manifest with an after-run manifest:

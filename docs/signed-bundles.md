@@ -4,7 +4,7 @@ Signed bundle support should let a maintainer check that an evidence bundle reco
 
 ## Current status
 
-This is a design note, not an implemented signing backend. Unsigned evidence bundles remain fully supported.
+A minimal local-key prototype is implemented. It writes a JSON sidecar and signs the exact evidence bundle file bytes with `hmac-sha256`. Unsigned evidence bundles remain fully supported.
 
 ## Goals
 
@@ -60,9 +60,9 @@ Candidate sidecar fields:
   "signature_version": "1.0",
   "payload_path": "evidence-bundle.yaml",
   "payload_sha256": "<sha256 of canonical payload bytes>",
-  "algorithm": "<algorithm identifier>",
+  "algorithm": "hmac-sha256",
   "key_hint": "<local or public key identifier>",
-  "signature": "<encoded signature bytes>"
+  "signature": "<hex HMAC-SHA256 signature>"
 }
 ```
 
@@ -70,21 +70,22 @@ Candidate sidecar fields:
 
 The first implementation should sign exact file bytes or a clearly documented canonical serialization, not an implicit Python object. Exact file bytes are simpler and reduce surprise, but they make whitespace and key ordering part of the signed payload. If canonical serialization is chosen later, it must be documented and covered by round-trip tests before release.
 
-## CLI sketch
+## CLI
 
-Potential commands:
+Prototype commands:
 
 ```bash
 repro-evidence evidence sign evidence-bundle.yaml \
-  --key local-test-key.pem \
+  --key local-test.key \
+  --key-hint local-test \
   -o evidence-bundle.yaml.sig.json
 
 repro-evidence evidence verify-signature evidence-bundle.yaml \
   --signature evidence-bundle.yaml.sig.json \
-  --key local-test-public-key.pem
+  --key local-test.key
 ```
 
-The command names are provisional. The implementation should keep `evidence validate` unchanged and allow unsigned bundles to keep passing validation.
+The prototype uses a local shared key file so it can run without external services or committed secrets. It is useful for tamper detection with locally trusted key material, not for public identity or certificate-chain validation. `evidence validate` remains unchanged and unsigned bundles keep passing validation.
 
 ## Test fixture policy
 
@@ -94,6 +95,6 @@ If tests need key material, use local synthetic test keys only. Test keys must b
 
 1. Add parser and data model support for signature sidecars without changing unsigned bundle validation.
 2. Add synthetic fixture tests for malformed sidecars and payload hash mismatches.
-3. Add one signing backend with local test keys only.
+3. Add one signing backend with local test keys only. Done for `hmac-sha256`.
 4. Document reviewer setup and limitations before adding release notes.
 5. Consider richer trust policies only after the sidecar contract is stable.

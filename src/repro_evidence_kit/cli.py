@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .evidence import load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema
 from .manifest import create_manifest, diff_manifests, load_json, write_json, write_text
+from .signing import load_signature_sidecar, sign_bundle, verify_bundle_signature
 from .verify import sandbox_result_as_junit, verify_sandbox_output
 
 
@@ -52,13 +53,25 @@ def build_parser() -> argparse.ArgumentParser:
     sandbox.add_argument("--format", choices=("json", "junit"), default="json")
     sandbox.add_argument("-o", "--output", type=Path)
 
-    evidence = sub.add_parser("evidence", help="Validate evidence bundles")
+    evidence = sub.add_parser("evidence", help="Validate and sign evidence bundles")
     evidence_sub = evidence.add_subparsers(dest="evidence_command", required=True)
     val = evidence_sub.add_parser("validate", help="Validate an evidence bundle YAML/JSON file")
     val.add_argument("bundle", type=Path)
     val.add_argument("--schema", action="store_true", help="Validate with schemas/evidence-bundle.schema.json using the optional jsonschema dependency")
     val.add_argument("--schema-path", type=Path, help="Use a custom JSON Schema path with --schema")
     val.add_argument("-o", "--output", type=Path)
+
+    sign = evidence_sub.add_parser("sign", help="Sign exact evidence bundle bytes with a local key")
+    sign.add_argument("bundle", type=Path)
+    sign.add_argument("--key", required=True, type=Path, help="Local synthetic or trusted HMAC key file")
+    sign.add_argument("--key-hint", help="Non-secret key identifier to record in the sidecar")
+    sign.add_argument("-o", "--output", type=Path, required=True)
+
+    verify_sig = evidence_sub.add_parser("verify-signature", help="Verify an evidence bundle signature sidecar")
+    verify_sig.add_argument("bundle", type=Path)
+    verify_sig.add_argument("--signature", required=True, type=Path, help="Signature sidecar JSON")
+    verify_sig.add_argument("--key", required=True, type=Path, help="Local synthetic or trusted HMAC key file")
+    verify_sig.add_argument("-o", "--output", type=Path)
     return parser
 
 
@@ -99,6 +112,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "evidence" and args.evidence_command == "validate":
             bundle = load_evidence(args.bundle)
             result = validate_evidence_bundle_schema(bundle, args.schema_path) if args.schema else validate_evidence_bundle(bundle)
+            write_json(result, args.output)
+            return 0 if result["ok"] else 1
+        if args.command == "evidence" and args.evidence_command == "sign":
+            write_json(sign_bundle(args.bundle, args.key, key_hint=args.key_hint), args.output)
+            return 0
+        if args.command == "evidence" and args.evidence_command == "verify-signature":
+            result = verify_bundle_signature(args.bundle, load_signature_sidecar(args.signature), args.key)
             write_json(result, args.output)
             return 0 if result["ok"] else 1
     except Exception as exc:
