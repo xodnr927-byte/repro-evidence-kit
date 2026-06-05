@@ -36,7 +36,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 Until a package index release is published, install from the repository:
 
 ```bash
-pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.2.0"
+pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.3.0"
 ```
 
 For local development:
@@ -102,4 +102,4 @@ This repository is for generic reproducibility tooling. Do not add proprietary b
 
 ## Status
 
-`0.1.x` is an early release series. The CLI and schema are intentionally small and conservative.
+`0.3.x` is an early maintainer-tooling release series. The CLI and schema stay intentionally small, conservative, and synthetic-example-only.

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.3.0 - 2026-06-05
+
+- Add `evidence sign` and `evidence verify-signature` for local `hmac-sha256` evidence-bundle sidecars.
+- Document signed-bundle boundaries: local tamper detection only, unsigned bundles remain supported, and signatures do not prove command execution or artifact semantics.
+- Add regression coverage for successful signature verification and payload-mismatch failures.
+
 ## 0.2.0 - 2026-06-02
 
 - Add JUnit XML output for `verify sandbox-run` CI report consumers.

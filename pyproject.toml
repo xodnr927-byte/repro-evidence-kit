@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "repro-evidence-kit"
-version = "0.2.0"
+version = "0.3.0"
 description = "Reproducible artifact manifests, sandbox-output verification, and evidence-bundle validation."
 readme = "README.md"
 requires-python = ">=3.10"

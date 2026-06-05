@@ -2,7 +2,7 @@
 
 ## Recently completed
 
-These are implemented on `main` after `v0.2.0` and are candidates for the next release:
+These are available in `v0.3.0`:
 
 - Markdown output for `manifest diff` reports.
 - Include/exclude filters for large artifact-tree manifests.
@@ -14,9 +14,9 @@ These are implemented on `main` after `v0.2.0` and are candidates for the next r
 ## Near-term polish
 
 - Keep examples synthetic-only.
-- Improve README, tutorials, and cookbook examples as new workflows land.
-- Prepare compact release notes for the next release.
-- Expand CI cookbook coverage for schema validation and filtered manifest workflows.
+- Add a signature sidecar JSON Schema for the current prototype.
+- Improve `verify-signature` error output and reviewer-facing UX.
+- Keep release/install smoke checklists current as source installs evolve.
 
 ## Later ideas
 

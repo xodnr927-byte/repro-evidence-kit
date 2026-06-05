@@ -63,3 +63,21 @@ repro-evidence evidence validate examples/evidence-bundle.yaml
 ```
 
 Evidence bundles prove byte identity for listed artifacts. They do not prove semantic correctness by themselves.
+
+## 6. Optionally sign the evidence bundle sidecar
+
+For local tamper detection, create synthetic local key material outside git, sign the exact evidence-bundle bytes, and verify the sidecar:
+
+```bash
+printf 'synthetic local test key only\n' > local-test.key
+repro-evidence evidence sign examples/evidence-bundle.yaml \
+  --key local-test.key \
+  --key-hint local-test \
+  -o evidence-bundle.yaml.sig.json
+repro-evidence evidence verify-signature examples/evidence-bundle.yaml \
+  --signature evidence-bundle.yaml.sig.json \
+  --key local-test.key
+```
+
+If the bundle file changes after signing, `verify-signature` exits with status `1` and reports a payload or signature mismatch. This proves local byte-level tamper detection only; it does not prove command execution, artifact semantics, signer identity, or trust-chain validity.
+
