@@ -4,18 +4,18 @@ Signed bundle support should let a maintainer check that an evidence bundle reco
 
 ## Current status
 
-This is a design note, not an implemented signing backend. Unsigned evidence bundles remain fully supported.
+A minimal local-key prototype is implemented. It writes a JSON sidecar and signs the exact evidence bundle file bytes with `hmac-sha256`. Unsigned evidence bundles remain fully supported.
 
 ## Goals
 
 - Add an optional workflow for signing an evidence bundle after it has been authored and validated.
-- Let a reviewer verify the signed bundle bytes against a public key or trusted local key reference.
+- Let a reviewer verify the signed bundle bytes against trusted local key material or a non-secret key reference.
 - Keep the workflow target-neutral and usable with synthetic examples.
 - Keep failure modes explicit: invalid structure, invalid signature, missing key material, and unsupported signing metadata should be distinguishable.
 
 ## Non-goals
 
-- No live private keys, real maintainer keys, or committed secrets.
+- No live keys, real maintainer trust material, or committed secrets.
 - No external keyserver requirement.
 - No claim that signatures prove artifact semantics or command correctness.
 - No requirement that all evidence bundles be signed.
@@ -23,12 +23,12 @@ This is a design note, not an implemented signing backend. Unsigned evidence bun
 
 ## What signing proves
 
-A valid signature can prove that the exact canonical bundle payload was signed by the holder of the matching private key.
+For the current `hmac-sha256` prototype, a valid sidecar can prove that the exact bundle bytes still match the local shared key material used for signing and verification.
 
 It can help answer:
 
 - Did this evidence bundle change after the signer approved it?
-- Does this bundle match the public key or local trust material used by the reviewer?
+- Does this bundle match the local trust material used by the reviewer?
 - Is the bundle metadata stable enough to attach to a pull request, release note, or audit record?
 
 ## What signing does not prove
@@ -60,9 +60,9 @@ Candidate sidecar fields:
   "signature_version": "1.0",
   "payload_path": "evidence-bundle.yaml",
   "payload_sha256": "<sha256 of canonical payload bytes>",
-  "algorithm": "<algorithm identifier>",
-  "key_hint": "<local or public key identifier>",
-  "signature": "<encoded signature bytes>"
+  "algorithm": "hmac-sha256",
+  "key_hint": "<non-secret local key identifier>",
+  "signature": "<hex HMAC-SHA256 signature>"
 }
 ```
 
@@ -70,21 +70,22 @@ Candidate sidecar fields:
 
 The first implementation should sign exact file bytes or a clearly documented canonical serialization, not an implicit Python object. Exact file bytes are simpler and reduce surprise, but they make whitespace and key ordering part of the signed payload. If canonical serialization is chosen later, it must be documented and covered by round-trip tests before release.
 
-## CLI sketch
+## CLI
 
-Potential commands:
+Prototype commands:
 
 ```bash
 repro-evidence evidence sign evidence-bundle.yaml \
-  --key local-test-key.pem \
+  --key local-test.key \
+  --key-hint local-test \
   -o evidence-bundle.yaml.sig.json
 
 repro-evidence evidence verify-signature evidence-bundle.yaml \
   --signature evidence-bundle.yaml.sig.json \
-  --key local-test-public-key.pem
+  --key local-test.key
 ```
 
-The command names are provisional. The implementation should keep `evidence validate` unchanged and allow unsigned bundles to keep passing validation.
+The prototype uses a local shared key file so it can run without external services or committed secrets. It is useful for tamper detection with locally trusted key material, not for public identity or certificate-chain validation. `evidence validate` remains unchanged and unsigned bundles keep passing validation.
 
 ## Test fixture policy
 
@@ -94,6 +95,6 @@ If tests need key material, use local synthetic test keys only. Test keys must b
 
 1. Add parser and data model support for signature sidecars without changing unsigned bundle validation.
 2. Add synthetic fixture tests for malformed sidecars and payload hash mismatches.
-3. Add one signing backend with local test keys only.
+3. Add one signing backend with local test keys only. Done for `hmac-sha256`.
 4. Document reviewer setup and limitations before adding release notes.
 5. Consider richer trust policies only after the sidecar contract is stable.

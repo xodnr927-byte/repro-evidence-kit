@@ -99,3 +99,29 @@ repro-evidence evidence validate examples/evidence-bundle.yaml --schema
 Schema-backed validation uses `schemas/evidence-bundle.schema.json` and additionally enforces constraints such as SHA-256 hex format and numeric size bounds. Use `--schema-path custom.schema.json` with `--schema` to test a local schema variant.
 
 Exit code `1` means the file was read successfully but the bundle failed validation. Exit code `2` means the file could not be read, parsed, or schema validation was requested without the optional dependency.
+
+
+## `evidence sign`
+
+Sign the exact evidence bundle file bytes with a local HMAC key and write a sidecar JSON file.
+
+```bash
+repro-evidence evidence sign examples/evidence-bundle.yaml \
+  --key local-test.key \
+  --key-hint local-test \
+  -o examples/evidence-bundle.yaml.sig.json
+```
+
+The key file is local trust material. Do not commit live secrets or real maintainer private keys. The prototype algorithm is `hmac-sha256`, intended for local tamper detection and synthetic examples.
+
+## `evidence verify-signature`
+
+Verify that a sidecar signature still matches the exact evidence bundle bytes and local key.
+
+```bash
+repro-evidence evidence verify-signature examples/evidence-bundle.yaml \
+  --signature examples/evidence-bundle.yaml.sig.json \
+  --key local-test.key
+```
+
+Exit code `0` means the sidecar signature matches. Exit code `1` means the sidecar was read but the payload hash, signature, version, or algorithm check failed. Exit code `2` means the command could not read or parse an input. A valid signature does not prove command execution, artifact semantics, or signer identity beyond the reviewer's trust in the local key.
