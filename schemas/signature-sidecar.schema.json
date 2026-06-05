@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/xodnr927-byte/repro-evidence-kit/schemas/signature-sidecar.schema.json",
+  "title": "Repro Evidence Signature Sidecar",
+  "description": "Schema for the local hmac-sha256 signature sidecar. It validates shape only; it does not prove signer identity, trust chains, command execution, or artifact semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "signature_version",
+    "payload_path",
+    "payload_sha256",
+    "algorithm",
+    "key_hint",
+    "signature"
+  ],
+  "properties": {
+    "signature_version": {
+      "const": "1.0"
+    },
+    "payload_path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\u0000]+$"
+    },
+    "payload_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "algorithm": {
+      "const": "hmac-sha256"
+    },
+    "key_hint": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Non-secret local key identifier; not a trust-chain identity."
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

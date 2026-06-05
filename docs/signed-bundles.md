@@ -53,7 +53,7 @@ evidence-bundle.yaml.sig.json
 
 A sidecar keeps signatures optional and avoids mutating the payload after signing.
 
-Candidate sidecar fields:
+Current sidecar fields, also covered by `schemas/signature-sidecar.schema.json`:
 
 ```json
 {
@@ -85,7 +85,9 @@ repro-evidence evidence verify-signature evidence-bundle.yaml \
   --key local-test.key
 ```
 
-The prototype uses a local shared key file so it can run without external services or committed secrets. It is useful for tamper detection with locally trusted key material, not for public identity or certificate-chain validation. `evidence validate` remains unchanged and unsigned bundles keep passing validation.
+The prototype uses a local shared key file so it can run without external services or committed secrets. It is useful for tamper detection with locally trusted key material, not for public identity or certificate-chain validation. `evidence validate` remains unchanged and unsigned bundles keep passing validation. Use `--format text` for reviewer-facing CI logs and `--schema` to check the sidecar structure when the optional schema extra is installed.
+
+See `examples/signed-bundle/README.md` for a minimal synthetic workflow.
 
 ## Test fixture policy
 

@@ -16,6 +16,7 @@ jobs:
       - run: python -m unittest discover -s tests
       - run: python -m repro_evidence_kit evidence validate examples/evidence-bundle.yaml
       - run: python -m repro_evidence_kit manifest create examples/dummy-binary -o /tmp/repro-manifest.json
+      - run: python scripts/smoke_examples.py
       - name: Leakage audit
         run: |
           ! grep -RInE 'PRO7|조조전|ekd5|EEX|S_44|R_44|Phase4|Frida|xdbg|Cao Cao|save editor|game mod|/mnt/c/Users/xodnr/Desktop/new|_modding_tools' . --exclude-dir=.git --exclude=ci.yml

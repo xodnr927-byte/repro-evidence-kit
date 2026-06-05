@@ -48,3 +48,21 @@ class VerifyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class VerifyReportingTests(unittest.TestCase):
+    def test_required_added_path_must_be_observed(self):
+        result = verify_sandbox_output({"files": []}, {"files": []}, allow_added={"report.json"}, require_added={"report.json"})
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["missing_required"]["added"], ["report.json"])
+
+    def test_sandbox_result_as_sarif_reports_unexpected_path(self):
+        from repro_evidence_kit.verify import sandbox_result_as_sarif
+        import json
+
+        result = verify_sandbox_output(
+            {"files": []},
+            {"files": [{"path": "report.json", "size": 2, "sha256": "a" * 64}]},
+        )
+        sarif = json.loads(sandbox_result_as_sarif(result))
+        self.assertEqual(sarif["version"], "2.1.0")
+        self.assertEqual(sarif["runs"][0]["results"][0]["ruleId"], "unexpected-sandbox-change")

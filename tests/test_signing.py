@@ -59,3 +59,37 @@ class SigningTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class SignatureUxTests(unittest.TestCase):
+    def test_verify_reports_structured_error_details(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "evidence-bundle.yaml"
+            key = root / "local-test.key"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            sidecar = sign_bundle(bundle, key)
+            sidecar["signature"] = "not-hex"
+
+            result = verify_bundle_signature(bundle, sidecar, key)
+
+        self.assertFalse(result["ok"])
+        self.assertIn("invalid signature", result["errors"])
+        self.assertEqual(result["error_details"][0]["code"], "invalid_signature")
+        self.assertEqual(result["error_details"][0]["field"], "signature")
+
+    def test_verify_reports_payload_path_mismatch(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "evidence-bundle.yaml"
+            key = root / "local-test.key"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            sidecar = sign_bundle(bundle, key)
+            sidecar["payload_path"] = "other.yaml"
+
+            result = verify_bundle_signature(bundle, sidecar, key)
+
+        self.assertFalse(result["ok"])
+        self.assertIn("payload_path mismatch", result["errors"])
+        self.assertEqual(result["error_details"][0]["code"], "payload_path_mismatch")

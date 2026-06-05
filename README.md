@@ -103,10 +103,13 @@ The command exits `0` when all changes are allowed and `1` when unexpected chang
 ## Documentation
 
 - [CLI reference](docs/cli.md)
+- [CLI exit codes](docs/cli-exit-codes.md)
 - [Tutorial](docs/tutorial.md)
 - [Evidence bundle format](docs/evidence-bundle-format.md)
+- [Use cases](docs/use-cases.md)
 - [Signed evidence bundles design note](docs/signed-bundles.md)
 - [Maintainer workflow](docs/maintainer-workflow.md)
+- [Release checklist](docs/release-checklist.md)
 - [GitHub Actions cookbook](docs/github-actions.md) — CI recipes for validation, manifests, sandbox checks, and schema-backed filtered workflows.
 - [Design principles](docs/design-principles.md)
 - [Roadmap](ROADMAP.md)
