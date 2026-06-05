@@ -9,13 +9,13 @@ A minimal local-key prototype is implemented. It writes a JSON sidecar and signs
 ## Goals
 
 - Add an optional workflow for signing an evidence bundle after it has been authored and validated.
-- Let a reviewer verify the signed bundle bytes against a public key or trusted local key reference.
+- Let a reviewer verify the signed bundle bytes against trusted local key material or a non-secret key reference.
 - Keep the workflow target-neutral and usable with synthetic examples.
 - Keep failure modes explicit: invalid structure, invalid signature, missing key material, and unsupported signing metadata should be distinguishable.
 
 ## Non-goals
 
-- No live private keys, real maintainer keys, or committed secrets.
+- No live keys, real maintainer trust material, or committed secrets.
 - No external keyserver requirement.
 - No claim that signatures prove artifact semantics or command correctness.
 - No requirement that all evidence bundles be signed.
@@ -23,12 +23,12 @@ A minimal local-key prototype is implemented. It writes a JSON sidecar and signs
 
 ## What signing proves
 
-A valid signature can prove that the exact canonical bundle payload was signed by the holder of the matching private key.
+For the current `hmac-sha256` prototype, a valid sidecar can prove that the exact bundle bytes still match the local shared key material used for signing and verification.
 
 It can help answer:
 
 - Did this evidence bundle change after the signer approved it?
-- Does this bundle match the public key or local trust material used by the reviewer?
+- Does this bundle match the local trust material used by the reviewer?
 - Is the bundle metadata stable enough to attach to a pull request, release note, or audit record?
 
 ## What signing does not prove
@@ -61,7 +61,7 @@ Candidate sidecar fields:
   "payload_path": "evidence-bundle.yaml",
   "payload_sha256": "<sha256 of canonical payload bytes>",
   "algorithm": "hmac-sha256",
-  "key_hint": "<local or public key identifier>",
+  "key_hint": "<non-secret local key identifier>",
   "signature": "<hex HMAC-SHA256 signature>"
 }
 ```
