@@ -22,6 +22,21 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 - Attach compact, hash-backed evidence bundles to pull requests or research notes.
 - Keep generated reports reviewable without publishing private input data.
 
+## What this proves
+
+- File manifests prove byte identity for the files they list.
+- Manifest diffs separate expected artifact changes from unexpected ones.
+- Sandbox verification proves the observed output set stayed inside an explicit allowlist.
+- Evidence bundles preserve command context, inputs, outputs, and hashes for review.
+- Signed sidecars add local tamper detection for exact bundle bytes.
+
+## What this does not prove
+
+- Hashes do not prove that generated outputs are semantically correct.
+- A passing sandbox check does not prove that a command was safe.
+- Signed sidecars do not prove signer identity, key trust, command execution, or artifact semantics.
+- Private or proprietary inputs still require reviewer judgment outside this repository.
+
 ## Features
 
 - Create deterministic SHA-256 manifests for files or filtered directory trees.
