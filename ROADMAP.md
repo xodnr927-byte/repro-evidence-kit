@@ -23,7 +23,6 @@ These are staged for the next release branch:
 ## Near-term polish
 
 - Keep examples synthetic-only.
-- Keep examples synthetic-only.
 - Expand CI recipes for signed-bundle verification and example smoke checks.
 - Add SARIF or additional JUnit adapters only after the JSON/text contracts stay stable.
 

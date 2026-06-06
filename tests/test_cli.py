@@ -257,6 +257,26 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertEqual(json.loads(stdout.getvalue())["algorithm"], "hmac-sha256")
 
+    def test_evidence_sign_refuses_to_overwrite_inputs(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            bundle_text = "title: Synthetic\n"
+            key_text = "synthetic test key only\n"
+            bundle.write_text(bundle_text, encoding="utf-8")
+            key.write_text(key_text, encoding="utf-8")
+
+            for output in (bundle, key):
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    code = main(["evidence", "sign", str(bundle), "--key", str(key), "-o", str(output)])
+                self.assertEqual(code, 2)
+                self.assertIn("must not overwrite", stderr.getvalue())
+
+            self.assertEqual(bundle.read_text(encoding="utf-8"), bundle_text)
+            self.assertEqual(key.read_text(encoding="utf-8"), key_text)
+
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_verify_signature_cli_schema_option(self):
         with tempfile.TemporaryDirectory() as td:

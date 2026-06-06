@@ -131,12 +131,16 @@ def main(argv: list[str] | None = None) -> int:
                 write_json(result, args.output)
             return 0 if result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "sign":
-            sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
             if args.dry_run:
+                sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
                 write_json(sidecar, None)
                 return 0
             if args.output is None:
                 raise ValueError("evidence sign requires -o/--output unless --dry-run is used")
+            output_path = args.output.resolve()
+            if output_path in {args.bundle.resolve(), args.key.resolve()}:
+                raise ValueError("signature output must not overwrite the bundle or key file")
+            sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
             write_json(sidecar, args.output)
             return 0
         if args.command == "evidence" and args.evidence_command == "verify-signature":
