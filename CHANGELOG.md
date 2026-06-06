@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.0 - 2026-06-06
+
 - Add signature sidecar JSON Schema validation and packaged-schema regression coverage.
 - Improve `evidence verify-signature` with text output, structured error details, and optional sidecar schema checks.
 - Add `evidence sign --dry-run` for non-writing sidecar previews.
