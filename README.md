@@ -120,4 +120,4 @@ This repository is for generic reproducibility tooling. Do not add proprietary b
 
 ## Status
 
-`0.3.x` is an early maintainer-tooling release series. The CLI and schema stay intentionally small, conservative, and synthetic-example-only.
+`0.4.x` is an early maintainer-tooling release series. The CLI and schema stay intentionally small, conservative, and synthetic-example-only.
