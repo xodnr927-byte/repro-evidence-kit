@@ -79,7 +79,7 @@ repro-evidence manifest create artifacts --include reports --exclude "*.tmp" -o 
 For stricter evidence-bundle checks, install the optional schema extra and validate against the checked-in JSON Schema:
 
 ```bash
-pip install "repro-evidence-kit[schema]"
+pip install "repro-evidence-kit[schema] @ git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.0"
 repro-evidence evidence validate examples/evidence-bundle.yaml --schema
 ```
 
