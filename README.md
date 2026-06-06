@@ -51,7 +51,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 Until a package index release is published, install from the repository:
 
 ```bash
-pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.3.0"
+pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.0"
 ```
 
 For local development:

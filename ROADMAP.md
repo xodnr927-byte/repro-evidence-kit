@@ -2,7 +2,7 @@
 
 ## Recently completed
 
-These are available in `v0.3.0`:
+These are available in `v0.4.0`:
 
 - Markdown output for `manifest diff` reports.
 - Include/exclude filters for large artifact-tree manifests.
@@ -10,8 +10,6 @@ These are available in `v0.3.0`:
 - Stable CLI exit-code documentation and regression coverage.
 - GitHub Actions cookbook and CI leakage audit.
 - Minimal signed evidence bundle sidecar prototype.
-
-These are staged for the next release branch:
 
 - Signature sidecar JSON Schema and packaged schema regression tests.
 - Reviewer-friendly `verify-signature --format text` output and structured JSON error details.
