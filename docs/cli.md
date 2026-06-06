@@ -2,15 +2,7 @@
 
 ## Exit codes
 
-All commands use the same top-level exit-code contract:
-
-| Code | Meaning | Examples |
-| --- | --- | --- |
-| `0` | The command completed and the checked predicate passed. | Manifest written, manifests diffed, evidence bundle valid, sandbox output contains only allowed changes. |
-| `1` | The command completed and found an expected validation or verification failure. | Evidence bundle is structurally invalid, sandbox output contains unexpected added/changed/removed paths. |
-| `2` | The command could not complete because of an input, parsing, filesystem, or runtime error. | Missing JSON file, malformed manifest JSON, unreadable evidence file. |
-
-Use `1` as a CI policy failure and `2` as an infrastructure or invocation failure.
+See [CLI exit codes](cli-exit-codes.md) for the shared `0`/`1`/`2` contract.
 
 ## `manifest create`
 
@@ -64,11 +56,11 @@ repro-evidence verify sandbox-run before.json after.json \
   --allow-changed output.bin
 ```
 
-Comma-separated allowlists are accepted for added, changed, and removed paths.
+Comma-separated allowlists are accepted for added, changed, and removed paths. Use `--require-added`, `--require-changed`, or `--require-removed` when an expected output must appear; a missing required change returns exit code `1`.
 
 Allowlist paths use the same normalization as manifest diffs, so `reports\summary.json` and `reports/summary.json` match the same logical artifact.
 
-Use `--format junit` when a CI system or test-report action expects JUnit XML:
+Use `--format junit` when a CI system or test-report action expects JUnit XML, or `--format sarif` when a code-scanning adapter expects SARIF results:
 
 ```bash
 repro-evidence verify sandbox-run before.json after.json \
@@ -77,7 +69,7 @@ repro-evidence verify sandbox-run before.json after.json \
   -o sandbox-verification.xml
 ```
 
-The JUnit report has one testcase named `sandbox-run`. Unexpected added, changed, or removed paths are rendered as one failure. This is a CI reporting adapter for the sandbox verification predicate; it is not a full test suite and does not change the JSON output contract.
+The JUnit report has one testcase named `sandbox-run`. Unexpected added, changed, removed, or missing required paths are rendered as one failure. SARIF output uses `unexpected-sandbox-change` and `missing-required-sandbox-change` rule IDs. These are CI reporting adapters for the sandbox verification predicate; they are not full test suites and do not change the JSON output contract.
 
 ## `evidence validate`
 
@@ -98,7 +90,7 @@ repro-evidence evidence validate examples/evidence-bundle.yaml --schema
 
 Schema-backed validation uses `schemas/evidence-bundle.schema.json` and additionally enforces constraints such as SHA-256 hex format and numeric size bounds. Use `--schema-path custom.schema.json` with `--schema` to test a local schema variant.
 
-Exit code `1` means the file was read successfully but the bundle failed validation. Exit code `2` means the file could not be read, parsed, or schema validation was requested without the optional dependency.
+Use `--format junit` to write a one-testcase XML report while preserving validation exit-code behavior. Exit code `1` means the file was read successfully but the bundle failed validation. Exit code `2` means the file could not be read, parsed, or schema validation was requested without the optional dependency.
 
 
 ## `evidence sign`
@@ -112,7 +104,7 @@ repro-evidence evidence sign examples/evidence-bundle.yaml \
   -o examples/evidence-bundle.yaml.sig.json
 ```
 
-The key file is local trust material. Do not commit live secrets or real maintainer private keys. The prototype algorithm is `hmac-sha256`, intended for local tamper detection and synthetic examples.
+The key file is local trust material. Do not commit live secrets or real maintainer private keys. The prototype algorithm is `hmac-sha256`, intended for local tamper detection and synthetic examples. Use `--dry-run` to print the sidecar that would be written without creating an output file.
 
 ## `evidence verify-signature`
 
@@ -124,4 +116,8 @@ repro-evidence evidence verify-signature examples/evidence-bundle.yaml \
   --key local-test.key
 ```
 
-Exit code `0` means the sidecar signature matches. Exit code `1` means the sidecar was read but the payload hash, signature, version, or algorithm check failed. Exit code `2` means the command could not read or parse an input. A valid signature does not prove command execution, artifact semantics, or signer identity beyond the reviewer's trust in the local key.
+Use `--format text` for maintainer-friendly CI logs, or keep the default JSON for machine-readable output. JSON results include `errors` plus structured `error_details` with stable categories such as `payload_hash_mismatch`, `signature_mismatch`, `unsupported_signature_version`, `unsupported_algorithm`, `missing_signature`, and parse/read failures as exit code `2`.
+
+Use `--schema` to validate the sidecar shape against `schemas/signature-sidecar.schema.json` when the optional `jsonschema` dependency is installed.
+
+Exit code `0` means the sidecar signature matches. Exit code `1` means the sidecar was read but the payload hash, signature, version, algorithm, or optional schema check failed. Exit code `2` means the command could not read or parse an input. A valid signature does not prove command execution, artifact semantics, or signer identity beyond the reviewer's trust in the local key.

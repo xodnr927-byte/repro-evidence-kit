@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add signature sidecar JSON Schema validation and packaged-schema regression coverage.
+- Improve `evidence verify-signature` with text output, structured error details, and optional sidecar schema checks.
+- Add `evidence sign --dry-run` for non-writing sidecar previews.
+- Add sandbox required-change checks, SARIF output, and JUnit output for evidence validation.
+- Add synthetic signed-bundle examples, use-case docs, release checklist, example smoke script, and release/install smoke script.
+
 ## 0.3.0 - 2026-06-05
 
 - Add `evidence sign` and `evidence verify-signature` for local `hmac-sha256` evidence-bundle sidecars.

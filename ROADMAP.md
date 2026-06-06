@@ -11,12 +11,20 @@ These are available in `v0.3.0`:
 - GitHub Actions cookbook and CI leakage audit.
 - Minimal signed evidence bundle sidecar prototype.
 
+These are staged for the next release branch:
+
+- Signature sidecar JSON Schema and packaged schema regression tests.
+- Reviewer-friendly `verify-signature --format text` output and structured JSON error details.
+- `evidence sign --dry-run` for non-writing sidecar preview.
+- Synthetic signed-bundle example, release checklist, use-cases page, and example smoke script.
+- Sandbox SARIF output, required-change checks, and evidence-validation JUnit output.
+- Fresh-environment release/install smoke script for tagged source references.
+
 ## Near-term polish
 
 - Keep examples synthetic-only.
-- Add a signature sidecar JSON Schema for the current prototype.
-- Improve `verify-signature` error output and reviewer-facing UX.
-- Keep release/install smoke checklists current as source installs evolve.
+- Expand CI recipes for signed-bundle verification and example smoke checks.
+- Add SARIF or additional JUnit adapters only after the JSON/text contracts stay stable.
 
 ## Later ideas
 

@@ -169,6 +169,144 @@ class CliTests(unittest.TestCase):
             self.assertFalse(result["ok"])
             self.assertIn("payload_sha256 mismatch", result["errors"])
 
+
+
+    def test_verify_sandbox_sarif_output_and_required_added(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            before = root / "before.json"
+            after = root / "after.json"
+            output = root / "verify.sarif"
+            before.write_text(json.dumps({"files": []}), encoding="utf-8")
+            after.write_text(json.dumps({"files": []}), encoding="utf-8")
+
+            code = main([
+                "verify",
+                "sandbox-run",
+                str(before),
+                str(after),
+                "--allow-added",
+                "report.json",
+                "--require-added",
+                "report.json",
+                "--format",
+                "sarif",
+                "-o",
+                str(output),
+            ])
+
+            self.assertEqual(code, 1)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(data["version"], "2.1.0")
+            self.assertEqual(data["runs"][0]["results"][0]["ruleId"], "missing-required-sandbox-change")
+
+    def test_evidence_validate_junit_output_keeps_failure_exit_code(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bad.yaml"
+            output = root / "evidence.xml"
+            bundle.write_text("title: Missing required fields\n", encoding="utf-8")
+            code = main(["evidence", "validate", str(bundle), "--format", "junit", "-o", str(output)])
+            self.assertEqual(code, 1)
+            root_xml = ET.fromstring(output.read_text(encoding="utf-8"))
+            self.assertEqual(root_xml.attrib["failures"], "1")
+            self.assertIn("inputs", root_xml.findtext("./testcase/failure") or "")
+
+    def test_evidence_verify_signature_cli_text_output_includes_error_codes(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            signature = root / "bundle.yaml.sig.json"
+            output = root / "verify-signature.txt"
+            bundle.write_text("title: Before\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            self.assertEqual(main(["evidence", "sign", str(bundle), "--key", str(key), "-o", str(signature)]), 0)
+            bundle.write_text("title: After\n", encoding="utf-8")
+
+            code = main([
+                "evidence",
+                "verify-signature",
+                str(bundle),
+                "--signature",
+                str(signature),
+                "--key",
+                str(key),
+                "--format",
+                "text",
+                "-o",
+                str(output),
+            ])
+
+            self.assertEqual(code, 1)
+            text = output.read_text(encoding="utf-8")
+            self.assertIn("signature verification: FAIL", text)
+            self.assertIn("payload_hash_mismatch", text)
+            self.assertIn("signature_mismatch", text)
+
+    def test_evidence_sign_dry_run_does_not_require_output_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(["evidence", "sign", str(bundle), "--key", str(key), "--dry-run"])
+            self.assertEqual(code, 0)
+            self.assertEqual(json.loads(stdout.getvalue())["algorithm"], "hmac-sha256")
+
+    def test_evidence_sign_refuses_to_overwrite_inputs(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            bundle_text = "title: Synthetic\n"
+            key_text = "synthetic test key only\n"
+            bundle.write_text(bundle_text, encoding="utf-8")
+            key.write_text(key_text, encoding="utf-8")
+
+            for output in (bundle, key):
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    code = main(["evidence", "sign", str(bundle), "--key", str(key), "-o", str(output)])
+                self.assertEqual(code, 2)
+                self.assertIn("must not overwrite", stderr.getvalue())
+
+            self.assertEqual(bundle.read_text(encoding="utf-8"), bundle_text)
+            self.assertEqual(key.read_text(encoding="utf-8"), key_text)
+
+    @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
+    def test_evidence_verify_signature_cli_schema_option(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "bundle.yaml"
+            key = root / "local-test.key"
+            signature = root / "bundle.yaml.sig.json"
+            output = root / "verify-signature.json"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            self.assertEqual(main(["evidence", "sign", str(bundle), "--key", str(key), "-o", str(signature)]), 0)
+
+            code = main([
+                "evidence",
+                "verify-signature",
+                str(bundle),
+                "--signature",
+                str(signature),
+                "--key",
+                str(key),
+                "--schema",
+                "-o",
+                str(output),
+            ])
+
+            self.assertEqual(code, 0)
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertTrue(result["ok"])
+            self.assertTrue(result["schema"]["ok"])
+
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_validate_schema_cli_returns_1_for_schema_failure(self):
         with tempfile.TemporaryDirectory() as td:

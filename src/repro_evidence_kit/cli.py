@@ -4,10 +4,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from .evidence import load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema
+from .evidence import evidence_result_as_junit, load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema, validate_signature_sidecar_schema
 from .manifest import create_manifest, diff_manifests, load_json, write_json, write_text
-from .signing import load_signature_sidecar, sign_bundle, verify_bundle_signature
-from .verify import sandbox_result_as_junit, verify_sandbox_output
+from .signing import load_signature_sidecar, sign_bundle, signature_verification_as_text, verify_bundle_signature
+from .verify import sandbox_result_as_junit, sandbox_result_as_sarif, verify_sandbox_output
 
 
 def _csv_set(value: str | None) -> set[str]:
@@ -50,7 +50,10 @@ def build_parser() -> argparse.ArgumentParser:
     sandbox.add_argument("--allow-added", help="Comma-separated path allowlist")
     sandbox.add_argument("--allow-changed", help="Comma-separated path allowlist")
     sandbox.add_argument("--allow-removed", help="Comma-separated path allowlist")
-    sandbox.add_argument("--format", choices=("json", "junit"), default="json")
+    sandbox.add_argument("--require-added", help="Comma-separated paths that must be added")
+    sandbox.add_argument("--require-changed", help="Comma-separated paths that must be changed")
+    sandbox.add_argument("--require-removed", help="Comma-separated paths that must be removed")
+    sandbox.add_argument("--format", choices=("json", "junit", "sarif"), default="json")
     sandbox.add_argument("-o", "--output", type=Path)
 
     evidence = sub.add_parser("evidence", help="Validate and sign evidence bundles")
@@ -59,18 +62,23 @@ def build_parser() -> argparse.ArgumentParser:
     val.add_argument("bundle", type=Path)
     val.add_argument("--schema", action="store_true", help="Validate with schemas/evidence-bundle.schema.json using the optional jsonschema dependency")
     val.add_argument("--schema-path", type=Path, help="Use a custom JSON Schema path with --schema")
+    val.add_argument("--format", choices=("json", "junit"), default="json")
     val.add_argument("-o", "--output", type=Path)
 
     sign = evidence_sub.add_parser("sign", help="Sign exact evidence bundle bytes with a local key")
     sign.add_argument("bundle", type=Path)
     sign.add_argument("--key", required=True, type=Path, help="Local synthetic or trusted HMAC key file")
     sign.add_argument("--key-hint", help="Non-secret key identifier to record in the sidecar")
-    sign.add_argument("-o", "--output", type=Path, required=True)
+    sign.add_argument("-o", "--output", type=Path)
+    sign.add_argument("--dry-run", action="store_true", help="Print the sidecar that would be written without creating an output file")
 
     verify_sig = evidence_sub.add_parser("verify-signature", help="Verify an evidence bundle signature sidecar")
     verify_sig.add_argument("bundle", type=Path)
     verify_sig.add_argument("--signature", required=True, type=Path, help="Signature sidecar JSON")
     verify_sig.add_argument("--key", required=True, type=Path, help="Local synthetic or trusted HMAC key file")
+    verify_sig.add_argument("--format", choices=("json", "text"), default="json")
+    verify_sig.add_argument("--schema", action="store_true", help="Also validate the signature sidecar shape with schemas/signature-sidecar.schema.json")
+    verify_sig.add_argument("--schema-path", type=Path, help="Use a custom JSON Schema path with --schema")
     verify_sig.add_argument("-o", "--output", type=Path)
     return parser
 
@@ -103,23 +111,49 @@ def main(argv: list[str] | None = None) -> int:
                 allow_added=_csv_set(args.allow_added),
                 allow_changed=_csv_set(args.allow_changed),
                 allow_removed=_csv_set(args.allow_removed),
+                require_added=_csv_set(args.require_added),
+                require_changed=_csv_set(args.require_changed),
+                require_removed=_csv_set(args.require_removed),
             )
             if args.format == "junit":
                 write_text(sandbox_result_as_junit(result), args.output)
+            elif args.format == "sarif":
+                write_text(sandbox_result_as_sarif(result), args.output)
             else:
                 write_json(result, args.output)
             return 0 if result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "validate":
             bundle = load_evidence(args.bundle)
             result = validate_evidence_bundle_schema(bundle, args.schema_path) if args.schema else validate_evidence_bundle(bundle)
-            write_json(result, args.output)
+            if args.format == "junit":
+                write_text(evidence_result_as_junit(result), args.output)
+            else:
+                write_json(result, args.output)
             return 0 if result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "sign":
-            write_json(sign_bundle(args.bundle, args.key, key_hint=args.key_hint), args.output)
+            if args.dry_run:
+                sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
+                write_json(sidecar, None)
+                return 0
+            if args.output is None:
+                raise ValueError("evidence sign requires -o/--output unless --dry-run is used")
+            output_path = args.output.resolve()
+            if output_path in {args.bundle.resolve(), args.key.resolve()}:
+                raise ValueError("signature output must not overwrite the bundle or key file")
+            sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
+            write_json(sidecar, args.output)
             return 0
         if args.command == "evidence" and args.evidence_command == "verify-signature":
-            result = verify_bundle_signature(args.bundle, load_signature_sidecar(args.signature), args.key)
-            write_json(result, args.output)
+            sidecar = load_signature_sidecar(args.signature)
+            result = verify_bundle_signature(args.bundle, sidecar, args.key)
+            if args.schema:
+                schema_result = validate_signature_sidecar_schema(sidecar, args.schema_path)
+                result["schema"] = schema_result
+                result["ok"] = bool(result["ok"] and schema_result["ok"])
+            if args.format == "text":
+                write_text(signature_verification_as_text(result), args.output)
+            else:
+                write_json(result, args.output)
             return 0 if result["ok"] else 1
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)

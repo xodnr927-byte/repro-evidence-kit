@@ -144,6 +144,7 @@ jobs:
         run: |
           python -m repro_evidence_kit verify sandbox-run before.json after.json \
             --allow-added report.json \
+            --require-added report.json \
             --format junit \
             -o sandbox-verification.xml
       - uses: actions/upload-artifact@v4
@@ -154,3 +155,106 @@ jobs:
 ```
 
 The JUnit output keeps the same exit-code behavior as JSON: unexpected changes still return `1` and fail the job. The XML report contains one testcase and one failure when the sandbox predicate fails.
+
+## Verify a signed evidence bundle sidecar
+
+This recipe uses a synthetic key created during the job. It is for local tamper-detection plumbing only, not public signer identity.
+
+```yaml
+name: Signed evidence smoke
+
+on:
+  pull_request:
+
+jobs:
+  signed-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[schema]"
+      - run: printf 'synthetic local test key only\n' > local-test.key
+      - run: |
+          python -m repro_evidence_kit evidence sign examples/evidence-bundle.yaml \
+            --key local-test.key \
+            --key-hint local-synthetic \
+            -o evidence-bundle.yaml.sig.json
+      - run: |
+          python -m repro_evidence_kit evidence verify-signature examples/evidence-bundle.yaml \
+            --signature evidence-bundle.yaml.sig.json \
+            --key local-test.key \
+            --schema \
+            --format text
+```
+
+## Run synthetic examples as a smoke test
+
+```yaml
+name: Example smoke
+
+on:
+  pull_request:
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e .
+      - run: python scripts/smoke_examples.py
+```
+
+## Upload sandbox verification as SARIF
+
+Use this when a downstream code-scanning integration accepts SARIF. The SARIF report is a compact policy-failure adapter for sandbox output verification.
+
+```yaml
+name: Sandbox SARIF
+
+on:
+  pull_request:
+
+jobs:
+  sandbox-sarif:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e .
+      - run: mkdir -p sandbox && printf 'input\n' > sandbox/input.txt
+      - run: python -m repro_evidence_kit manifest create sandbox -o before.json
+      - run: printf '{"ok": true}\n' > sandbox/report.json
+      - run: python -m repro_evidence_kit manifest create sandbox -o after.json
+      - run: |
+          python -m repro_evidence_kit verify sandbox-run before.json after.json \
+            --allow-added report.json \
+            --require-added report.json \
+            --format sarif \
+            -o sandbox-verification.sarif
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandbox-verification-sarif
+          path: sandbox-verification.sarif
+```
+
+## Evidence validation as JUnit XML
+
+```yaml
+- run: |
+    python -m repro_evidence_kit evidence validate examples/evidence-bundle.yaml \
+      --format junit \
+      -o evidence-validation.xml
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: evidence-validation-junit
+    path: evidence-validation.xml
+```
