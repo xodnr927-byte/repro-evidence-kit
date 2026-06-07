@@ -51,7 +51,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 Until a package index release is published, install from the repository:
 
 ```bash
-pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.0"
+pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.1"
 ```
 
 For local development:
@@ -79,7 +79,7 @@ repro-evidence manifest create artifacts --include reports --exclude "*.tmp" -o 
 For stricter evidence-bundle checks, install the optional schema extra and validate against the checked-in JSON Schema:
 
 ```bash
-pip install "repro-evidence-kit[schema] @ git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.0"
+pip install "repro-evidence-kit[schema] @ git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.1"
 repro-evidence evidence validate examples/evidence-bundle.yaml --schema
 ```
 
