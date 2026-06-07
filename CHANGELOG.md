@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Update installation documentation after the first verified PyPI publication.
+
 ## 0.4.1 - 2026-06-07
 
 - Add a Python 3.10, 3.11, and 3.12 CI matrix using non-editable package installs.

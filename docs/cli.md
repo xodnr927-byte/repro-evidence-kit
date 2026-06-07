@@ -84,7 +84,7 @@ The default validator is lightweight and has no dependency beyond the base packa
 For stricter JSON Schema validation, install the optional schema extra and pass `--schema`:
 
 ```bash
-pip install "repro-evidence-kit[schema] @ git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.1"
+pip install "repro-evidence-kit[schema]"
 repro-evidence evidence validate examples/evidence-bundle.yaml --schema
 ```
 

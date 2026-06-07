@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/xodnr927-byte/repro-evidence-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/xodnr927-byte/repro-evidence-kit/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/xodnr927-byte/repro-evidence-kit)](https://github.com/xodnr927-byte/repro-evidence-kit/releases)
+[![PyPI](https://img.shields.io/pypi/v/repro-evidence-kit)](https://pypi.org/project/repro-evidence-kit/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/github/license/xodnr927-byte/repro-evidence-kit)](LICENSE)
 
@@ -48,10 +49,10 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 
 ## Install
 
-Until a package index release is published, install from the repository:
+Install the latest release from PyPI:
 
 ```bash
-pip install "git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.1"
+pip install repro-evidence-kit
 ```
 
 For local development:
@@ -79,7 +80,7 @@ repro-evidence manifest create artifacts --include reports --exclude "*.tmp" -o 
 For stricter evidence-bundle checks, install the optional schema extra and validate against the checked-in JSON Schema:
 
 ```bash
-pip install "repro-evidence-kit[schema] @ git+https://github.com/xodnr927-byte/repro-evidence-kit.git@v0.4.1"
+pip install "repro-evidence-kit[schema]"
 repro-evidence evidence validate examples/evidence-bundle.yaml --schema
 ```
 
