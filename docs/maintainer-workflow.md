@@ -23,7 +23,9 @@ python -m repro_evidence_kit evidence validate examples/evidence-bundle.yaml
 python -m repro_evidence_kit manifest create examples/dummy-binary -o /tmp/manifest.json
 ```
 
-This repository's CI also runs a leakage audit that rejects project-specific or proprietary-sample markers.
+This repository's CI runs these checks after a non-editable package install on
+Python 3.10, 3.11, and 3.12. It also runs a leakage audit that rejects
+project-specific or proprietary-sample markers.
 
 For copyable GitHub Actions snippets, see the [GitHub Actions cookbook](github-actions.md).
 
