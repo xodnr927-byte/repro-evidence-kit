@@ -110,6 +110,7 @@ The command exits `0` when all changes are allowed and `1` when unexpected chang
 - [Signed evidence bundles design note](docs/signed-bundles.md)
 - [Maintainer workflow](docs/maintainer-workflow.md)
 - [Release checklist](docs/release-checklist.md)
+- [PyPI publishing](docs/publishing.md)
 - [GitHub Actions cookbook](docs/github-actions.md) — CI recipes for validation, manifests, sandbox checks, and schema-backed filtered workflows.
 - [Design principles](docs/design-principles.md)
 - [Roadmap](ROADMAP.md)

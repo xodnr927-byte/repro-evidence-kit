@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add a Python 3.10, 3.11, and 3.12 CI matrix using non-editable package installs.
+- Add checked wheel/sdist builds and a release-triggered PyPI Trusted Publishing workflow.
 
 ## 0.4.0 - 2026-06-06
 

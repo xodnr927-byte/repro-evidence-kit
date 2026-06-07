@@ -22,6 +22,7 @@ These are available in `v0.4.0`:
 
 - Keep examples synthetic-only.
 - Expand CI recipes for signed-bundle verification and example smoke checks.
+- Complete the first PyPI release after Trusted Publisher configuration.
 - Add SARIF or additional JUnit adapters only after the JSON/text contracts stay stable.
 
 ## Later ideas

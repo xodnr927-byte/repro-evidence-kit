@@ -17,7 +17,14 @@ Use this checklist before tagging a release. It is maintainer guidance, not a tr
    ```bash
    python scripts/smoke_examples.py
    ```
-5. Review `CHANGELOG.md`, `README.md`, and `ROADMAP.md` for version wording.
+5. Build and check the wheel and source distribution:
+   ```bash
+   python -m pip install build twine
+   python -m build
+   python scripts/check_dist.py
+   ```
+6. Review `CHANGELOG.md`, `README.md`, and `ROADMAP.md` for version wording.
+7. Confirm the release tag will be exactly `v<project-version>`.
 
 ## After tagging
 
@@ -29,3 +36,6 @@ Use this checklist before tagging a release. It is maintainer guidance, not a tr
 3. Run minimal evidence signing and verification with synthetic local key material.
 4. Mutate the bundle bytes and confirm verification returns exit code `1`.
 5. Do not publish live keys, private fixtures, proprietary samples, or target-specific evidence.
+
+For the one-time Trusted Publisher setup and automated release flow, see
+[Publishing to PyPI](publishing.md).
