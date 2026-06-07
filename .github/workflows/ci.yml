@@ -25,3 +25,15 @@ jobs:
       - name: Leakage audit
         run: |
           ! grep -RInE 'PRO7|조조전|ekd5|EEX|S_44|R_44|Phase4|Frida|xdbg|Cao Cao|save editor|game mod|/mnt/c/Users/xodnr/Desktop/new|_modding_tools' . --exclude-dir=.git --exclude=ci.yml
+
+  package:
+    name: Build package distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install build twine
+      - run: python -m build
+      - run: python scripts/check_dist.py
