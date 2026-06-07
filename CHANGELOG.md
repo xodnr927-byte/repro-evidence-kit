@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a Python 3.10, 3.11, and 3.12 CI matrix using non-editable package installs.
+
 ## 0.4.0 - 2026-06-06
 
 - Add signature sidecar JSON Schema validation and packaged-schema regression coverage.
