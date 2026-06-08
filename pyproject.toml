@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 authors = [{ name = "xodnr927-byte" }]
-keywords = ["reproducibility", "artifact", "manifest", "sha256", "evidence", "binary-analysis"]
+keywords = ["reproducibility", "artifact", "manifest", "sha256", "evidence", "ci"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -21,7 +21,9 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Security",
+  "Topic :: Software Development :: Build Tools",
   "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
 ]
 dependencies = ["PyYAML>=6.0"]
 
@@ -34,6 +36,9 @@ repro-evidence = "repro_evidence_kit.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/xodnr927-byte/repro-evidence-kit"
+Documentation = "https://github.com/xodnr927-byte/repro-evidence-kit/tree/main/docs"
+Source = "https://github.com/xodnr927-byte/repro-evidence-kit"
+Changelog = "https://github.com/xodnr927-byte/repro-evidence-kit/blob/main/CHANGELOG.md"
 Issues = "https://github.com/xodnr927-byte/repro-evidence-kit/issues"
 
 [tool.hatch.build.targets.wheel]
