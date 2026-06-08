@@ -2,7 +2,17 @@
 
 ## Recently completed
 
-These are available in `v0.4.0`:
+### v0.4.1
+
+- PyPI publication completed.
+- Trusted Publishing/OIDC release flow completed.
+- Package-index installation documentation completed.
+- Wheel/sdist build and check completed.
+- Schema extra and package-data verification completed.
+- Fresh-install smoke validation completed.
+- Node 24 GitHub Actions hygiene completed via PR #36.
+
+### v0.4.0
 
 - Markdown output for `manifest diff` reports.
 - Include/exclude filters for large artifact-tree manifests.
@@ -10,7 +20,6 @@ These are available in `v0.4.0`:
 - Stable CLI exit-code documentation and regression coverage.
 - GitHub Actions cookbook and CI leakage audit.
 - Minimal signed evidence bundle sidecar prototype.
-
 - Signature sidecar JSON Schema and packaged schema regression tests.
 - Reviewer-friendly `verify-signature --format text` output and structured JSON error details.
 - `evidence sign --dry-run` for non-writing sidecar preview.
@@ -22,11 +31,11 @@ These are available in `v0.4.0`:
 
 - Keep examples synthetic-only.
 - Expand CI recipes for signed-bundle verification and example smoke checks.
-- Add SARIF or additional JUnit adapters only after the JSON/text contracts stay stable.
+- Add contract and schema tests for the existing SARIF output.
 
 ## Later ideas
 
-- SARIF output for CI code-scanning integrations.
+- Optional GitHub code scanning integration for the existing SARIF output.
 - Richer signed bundle trust policies after the sidecar contract is stable.
 
 ## Non-goals
