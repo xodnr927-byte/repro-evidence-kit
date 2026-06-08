@@ -6,15 +6,15 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/github/license/xodnr927-byte/repro-evidence-kit)](LICENSE)
 
-A small command-line toolkit for reproducible artifact verification in binary analysis, security research, and automation workflows.
+`repro-evidence-kit` is a maintainer-focused CLI for reviewing generated artifacts with hash manifests, evidence bundles, and CI-friendly sandbox-output checks.
 
-It creates hash manifests, compares experiment outputs, and validates evidence bundles so results can be reviewed without relying on private source data.
+It helps maintainers review artifact-heavy pull requests, release automation, and research outputs without committing private datasets, proprietary samples, or noisy execution logs.
 
 ## Why this matters
 
 Generated artifacts are hard to review when the only proof is a large log, a private input tree, or a verbal claim that "nothing important changed." `repro-evidence-kit` keeps the review surface small: it records byte hashes, separates expected output changes from unexpected ones, and stores enough command context for another maintainer to rerun or challenge the evidence.
 
-The project is intentionally target-neutral. It should help maintainers in CI, security research, binary-analysis, data-processing, and automation workflows without requiring them to publish proprietary samples or project-specific case files.
+The project is intentionally target-neutral. It should help maintainers in CI, release automation, data-processing, security research, and binary-analysis workflows without requiring them to publish proprietary samples or project-specific case files.
 
 ## Use cases
 
@@ -29,13 +29,13 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 - Manifest diffs separate expected artifact changes from unexpected ones.
 - Sandbox verification proves the observed output set stayed inside an explicit allowlist.
 - Evidence bundles preserve command context, inputs, outputs, and hashes for review.
-- Signed sidecars add local tamper detection for exact bundle bytes.
+- Local HMAC sidecars provide tamper detection for exact evidence-bundle bytes.
 
 ## What this does not prove
 
 - Hashes do not prove that generated outputs are semantically correct.
 - A passing sandbox check does not prove that a command was safe.
-- Signed sidecars do not prove signer identity, key trust, command execution, or artifact semantics.
+- Local HMAC sidecars do not prove signer identity, public trust, command execution, or artifact semantics.
 - Private or proprietary inputs still require reviewer judgment outside this repository.
 
 ## Features
@@ -44,7 +44,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, s
 - Diff two manifests to identify added, removed, changed, and unchanged artifacts.
 - Verify sandbox/experiment outputs against explicit allowlists, with optional JUnit XML for CI report consumers.
 - Validate simple YAML or JSON evidence bundles, with optional JSON Schema checks.
-- Sign and verify evidence bundle sidecars with a local-key tamper-detection prototype.
+- Create and verify local HMAC sidecars for exact-bundle tamper detection.
 - Includes only synthetic public examples.
 
 ## Install
