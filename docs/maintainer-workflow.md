@@ -33,20 +33,23 @@ For copyable GitHub Actions snippets, see the [GitHub Actions cookbook](github-a
 
 Useful Codex tasks for this project include:
 
-- triaging issues into schema, CLI, docs, or test work,
-- drafting changelog entries from merged PRs,
-- reviewing whether examples are synthetic and redistributable,
-- debugging CI failures,
-- proposing narrow tests for manifest and verifier behavior.
+- issue triage,
+- documentation drafts,
+- changelog drafts,
+- CI failure diagnosis,
+- narrow test proposals.
 
-Codex should not add private datasets, proprietary samples, credentials, or target-specific reverse-engineering artifacts.
+Codex-assisted work must not introduce private datasets, proprietary samples,
+credentials, target-specific reverse-engineering artifacts, or expanded
+trust/security claims. A human maintainer must review release, publishing, and
+security-sensitive changes before merge.
 
-## Release checklist
+## Releases and publishing
 
-Before a release:
+Use the [release checklist](release-checklist.md) for the maintained pre-tag and
+post-tag validation steps instead of reproducing them here.
 
-1. Run unit tests.
-2. Validate example evidence bundles.
-3. Run the leakage audit.
-4. Confirm README examples still work.
-5. Update `CHANGELOG.md` and tag the release.
+See [Publishing to PyPI](publishing.md) for the Trusted Publishing setup and
+release flow. PyPI publishing is triggered by a release and uses tokenless
+Trusted Publishing/OIDC credentials. This authorization mechanism does not
+prove package correctness.
