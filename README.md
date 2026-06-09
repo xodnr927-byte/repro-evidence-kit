@@ -114,6 +114,8 @@ The command exits `0` when all changes are allowed and `1` when unexpected chang
 - [PyPI publishing](docs/publishing.md)
 - [GitHub Actions cookbook](docs/github-actions.md) — CI recipes for validation, manifests, sandbox checks, and schema-backed filtered workflows.
 - [Design principles](docs/design-principles.md)
+- [Why not just ...?](docs/why-not-just.md)
+- [Claim boundaries](docs/claim-boundaries.md)
 - [Roadmap](ROADMAP.md)
 
 ## Data policy
