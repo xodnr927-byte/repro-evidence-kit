@@ -56,9 +56,55 @@ class SigningTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertIn("unsupported algorithm", result["errors"])
 
+    def test_verify_rejects_wrong_key(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "evidence-bundle.yaml"
+            signing_key = root / "signing.key"
+            wrong_key = root / "wrong.key"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            signing_key.write_text("synthetic signing key only\n", encoding="utf-8")
+            wrong_key.write_text("different synthetic key only\n", encoding="utf-8")
 
-if __name__ == "__main__":
-    unittest.main()
+            sidecar = sign_bundle(bundle, signing_key)
+            result = verify_bundle_signature(bundle, sidecar, wrong_key)
+
+        self.assertFalse(result["ok"])
+        self.assertIn("signature mismatch", result["errors"])
+        self.assertEqual(result["error_details"][-1]["code"], "signature_mismatch")
+
+    def test_verify_rejects_missing_signature(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "evidence-bundle.yaml"
+            key = root / "local-test.key"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            sidecar = sign_bundle(bundle, key)
+            del sidecar["signature"]
+
+            result = verify_bundle_signature(bundle, sidecar, key)
+
+        self.assertFalse(result["ok"])
+        self.assertIn("missing signature", result["errors"])
+        self.assertEqual(result["error_details"][-1]["code"], "missing_signature")
+
+    def test_verify_rejects_invalid_payload_hash_shape(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "evidence-bundle.yaml"
+            key = root / "local-test.key"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+            key.write_text("synthetic test key only\n", encoding="utf-8")
+            sidecar = sign_bundle(bundle, key)
+            sidecar["payload_sha256"] = "not-a-sha256"
+
+            result = verify_bundle_signature(bundle, sidecar, key)
+
+        self.assertFalse(result["ok"])
+        self.assertIn("invalid payload_sha256", result["errors"])
+        self.assertEqual(result["error_details"][0]["code"], "invalid_payload_sha256")
+
 
 class SignatureUxTests(unittest.TestCase):
     def test_verify_reports_structured_error_details(self):
@@ -93,3 +139,7 @@ class SignatureUxTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertIn("payload_path mismatch", result["errors"])
         self.assertEqual(result["error_details"][0]["code"], "payload_path_mismatch")
+
+
+if __name__ == "__main__":
+    unittest.main()
