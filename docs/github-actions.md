@@ -2,6 +2,22 @@
 
 These snippets use synthetic paths and generic artifact names. Replace the paths with outputs from your own repository, but do not commit private source data or proprietary samples.
 
+## Choose a workflow
+
+| Need | Use | Output |
+| --- | --- | --- |
+| Validate evidence metadata | `repro-evidence evidence validate` | exit code, optional text/JUnit |
+| Validate evidence metadata against JSON Schema | `repro-evidence evidence validate --schema` | stricter validation result |
+| Create an artifact manifest | `repro-evidence manifest create` | JSON manifest |
+| Diff generated outputs | `repro-evidence manifest diff` | added/removed/changed/unchanged paths |
+| Gate sandbox outputs | `repro-evidence verify sandbox-run` | policy exit code and optional report |
+| Publish CI-readable sandbox failures | `verify sandbox-run --format junit` | JUnit XML artifact |
+| Publish SARIF-compatible sandbox failures | `verify sandbox-run --format sarif` | SARIF JSON artifact |
+| Check local tamper detection | `evidence sign` and `evidence verify-signature` | local HMAC sidecar result |
+| Smoke-test synthetic examples | `python scripts/smoke_examples.py` | example command pass/fail |
+
+Use the smallest recipe that matches the review question. These workflows provide compact review artifacts; they do not prove command safety, semantic correctness, public signer identity, or full supply-chain provenance.
+
 ## Validate evidence bundles
 
 ```yaml
