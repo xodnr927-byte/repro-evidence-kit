@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .evidence import evidence_result_as_junit, load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema, validate_signature_sidecar_schema
-from .manifest import create_manifest, diff_manifests, load_json, write_json, write_text
+from .manifest import create_manifest, diff_manifests, load_manifest, write_json, write_text
 from .signing import load_signature_sidecar, sign_bundle, signature_verification_as_text, verify_bundle_signature
 from .verify import sandbox_result_as_junit, sandbox_result_as_sarif, verify_sandbox_output
 
@@ -109,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "manifest" and args.manifest_command == "diff":
             _ensure_output_does_not_overwrite_input(args.output, args.before, args.after)
-            result = diff_manifests(load_json(args.before), load_json(args.after))
+            result = diff_manifests(load_manifest(args.before), load_manifest(args.after))
             if args.format == "markdown":
                 write_text(result.as_markdown(), args.output)
             else:
@@ -118,8 +118,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "verify" and args.verify_command == "sandbox-run":
             _ensure_output_does_not_overwrite_input(args.output, args.before, args.after)
             result = verify_sandbox_output(
-                load_json(args.before),
-                load_json(args.after),
+                load_manifest(args.before),
+                load_manifest(args.after),
                 allow_added=_csv_set(args.allow_added),
                 allow_changed=_csv_set(args.allow_changed),
                 allow_removed=_csv_set(args.allow_removed),

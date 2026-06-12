@@ -38,6 +38,17 @@ def main(argv: list[str] | None = None) -> int:
         repro = bin_path(env, "repro-evidence")
         run([str(python), "-m", "pip", "install", args.source])
         run([str(repro), "--version"])
+        run([
+            str(python),
+            "-c",
+            (
+                "from importlib.resources import files; "
+                "root=files('repro_evidence_kit.schemas'); "
+                "names=('evidence-bundle.schema.json','signature-sidecar.schema.json',"
+                "'manifest.schema.json','sandbox-sarif.schema.json'); "
+                "assert all(root.joinpath(name).is_file() for name in names)"
+            ),
+        ])
 
         bundle = root / "evidence-bundle.yaml"
         key = root / "local-test.key"

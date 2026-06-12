@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 MANIFEST_VERSION = "1.0"
+_HEX64 = set("0123456789abcdefABCDEF")
 
 
 def normalize_manifest_path(path: object) -> str:
@@ -115,6 +116,60 @@ def load_json(path: Path) -> dict[str, Any]:
         data = json.load(f)
     if not isinstance(data, dict):
         raise ValueError(f"expected JSON object in {path}")
+    return data
+
+
+def validate_manifest(data: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    files = data.get("files")
+    if not isinstance(files, list):
+        return ["files must be a list"]
+
+    seen: set[str] = set()
+    total_bytes = 0
+    for index, item in enumerate(files):
+        prefix = f"files[{index}]"
+        if not isinstance(item, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+
+        path = item.get("path")
+        normalized_path: str | None = None
+        if not isinstance(path, str) or not path:
+            errors.append(f"{prefix}.path must be a non-empty string")
+        else:
+            normalized_path = normalize_manifest_path(path)
+            if normalized_path in seen:
+                errors.append(f"duplicate manifest path: {normalized_path}")
+            seen.add(normalized_path)
+
+        size = item.get("size")
+        if isinstance(size, bool) or not isinstance(size, int) or size < 0:
+            errors.append(f"{prefix}.size must be a non-negative integer")
+        else:
+            total_bytes += size
+
+        sha256 = item.get("sha256")
+        if not isinstance(sha256, str) or len(sha256) != 64 or any(char not in _HEX64 for char in sha256):
+            errors.append(f"{prefix}.sha256 must be 64 hexadecimal characters")
+
+    manifest_version = data.get("manifest_version")
+    if manifest_version is not None and manifest_version != MANIFEST_VERSION:
+        errors.append(f"unsupported manifest_version: {manifest_version}")
+    file_count = data.get("file_count")
+    if file_count is not None and file_count != len(files):
+        errors.append(f"file_count does not match files length: {file_count} != {len(files)}")
+    recorded_total = data.get("total_bytes")
+    if recorded_total is not None and recorded_total != total_bytes:
+        errors.append(f"total_bytes does not match file sizes: {recorded_total} != {total_bytes}")
+    return errors
+
+
+def load_manifest(path: Path) -> dict[str, Any]:
+    data = load_json(path)
+    errors = validate_manifest(data)
+    if errors:
+        raise ValueError(f"invalid manifest {path}: {'; '.join(errors)}")
     return data
 
 
