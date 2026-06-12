@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 import unittest
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
+from repro_evidence_kit.evidence import Draft202012Validator
 from repro_evidence_kit.verify import sandbox_result_as_junit, sandbox_result_as_sarif, verify_sandbox_output
 
 
@@ -97,6 +99,22 @@ class VerifyReportingTests(unittest.TestCase):
 
         self.assertEqual(run["results"], [])
         self.assertEqual({rule["id"] for rule in run["tool"]["driver"]["rules"]}, {"unexpected-sandbox-change", "missing-required-sandbox-change"})
+
+    @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
+    def test_sarif_output_matches_checked_in_schema(self):
+        result = verify_sandbox_output(
+            {"files": []},
+            {"files": [{"path": "report.json", "size": 2, "sha256": "a" * 64}]},
+        )
+        sarif = json.loads(sandbox_result_as_sarif(result))
+        schema = json.loads(Path("schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8"))
+        errors = list(Draft202012Validator(schema).iter_errors(sarif))
+        self.assertEqual(errors, [])
+
+    def test_sarif_schema_copy_matches_packaged_copy(self):
+        repo_schema = Path("schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8")
+        packaged_schema = Path("src/repro_evidence_kit/schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8")
+        self.assertEqual(packaged_schema, repo_schema)
 
 
 if __name__ == "__main__":

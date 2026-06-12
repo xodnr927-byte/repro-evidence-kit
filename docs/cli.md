@@ -16,6 +16,7 @@ Each file entry includes relative path, byte size, and SHA-256.
 
 Manifest paths are serialized with `/` separators so manifests stay reviewable across platforms.
 The input must exist and must be a regular file or directory. Symbolic links are rejected, including links nested inside a directory tree, so a manifest cannot silently read outside its declared root.
+Manifest consumers reject missing or malformed entry fields, unsupported versions, inconsistent file counts or byte totals, and duplicate logical paths after separator normalization.
 
 Use `--include` and `--exclude` to filter large artifact trees by manifest-relative path:
 

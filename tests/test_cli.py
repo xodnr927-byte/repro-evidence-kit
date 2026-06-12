@@ -337,6 +337,31 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 2)
             self.assertIn("does not exist", stderr.getvalue())
 
+    def test_manifest_consumers_reject_malformed_and_duplicate_paths(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            valid = root / "valid.json"
+            malformed = root / "malformed.json"
+            duplicate = root / "duplicate.json"
+            valid.write_text(json.dumps({"files": []}), encoding="utf-8")
+            malformed.write_text(json.dumps({"files": [{"size": 1}]}), encoding="utf-8")
+            duplicate.write_text(json.dumps({
+                "files": [
+                    {"path": r"reports\result.json", "size": 1, "sha256": "a" * 64},
+                    {"path": "reports/result.json", "size": 1, "sha256": "a" * 64},
+                ]
+            }), encoding="utf-8")
+
+            for command, expected in (
+                (["manifest", "diff", str(malformed), str(valid)], "path must be a non-empty string"),
+                (["verify", "sandbox-run", str(duplicate), str(valid)], "duplicate manifest path"),
+            ):
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    code = main(command)
+                self.assertEqual(code, 2)
+                self.assertIn(expected, stderr.getvalue())
+
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_verify_signature_cli_schema_option(self):
         with tempfile.TemporaryDirectory() as td:

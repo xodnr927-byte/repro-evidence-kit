@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from repro_evidence_kit.manifest import create_manifest, diff_manifests, write_text
+from repro_evidence_kit.manifest import create_manifest, diff_manifests, load_manifest, validate_manifest, write_text
 
 
 class ManifestTests(unittest.TestCase):
@@ -117,6 +117,50 @@ class ManifestTests(unittest.TestCase):
                     write_text("replacement\n", output)
             self.assertEqual(output.read_text(encoding="utf-8"), "original\n")
             self.assertEqual(list(output.parent.glob(f".{output.name}.*.tmp")), [])
+
+    def test_validate_manifest_rejects_duplicate_normalized_paths(self):
+        errors = validate_manifest({
+            "files": [
+                {"path": r"reports\result.json", "size": 1, "sha256": "a" * 64},
+                {"path": "reports/result.json", "size": 1, "sha256": "a" * 64},
+            ]
+        })
+        self.assertIn("duplicate manifest path: reports/result.json", errors)
+
+    def test_validate_manifest_rejects_missing_or_malformed_entry_fields(self):
+        errors = validate_manifest({
+            "files": [
+                {"size": -1, "sha256": "bad"},
+                "not-an-object",
+            ]
+        })
+        self.assertIn("files[0].path must be a non-empty string", errors)
+        self.assertIn("files[0].size must be a non-negative integer", errors)
+        self.assertIn("files[0].sha256 must be 64 hexadecimal characters", errors)
+        self.assertIn("files[1] must be an object", errors)
+
+    def test_validate_manifest_rejects_inconsistent_metadata(self):
+        errors = validate_manifest({
+            "manifest_version": "2.0",
+            "file_count": 2,
+            "total_bytes": 9,
+            "files": [{"path": "a", "size": 1, "sha256": "a" * 64}],
+        })
+        self.assertIn("unsupported manifest_version: 2.0", errors)
+        self.assertIn("file_count does not match files length: 2 != 1", errors)
+        self.assertIn("total_bytes does not match file sizes: 9 != 1", errors)
+
+    def test_load_manifest_reports_validation_errors(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "manifest.json"
+            path.write_text('{"files": [{"size": 1}]}', encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, r"files\[0\]\.path"):
+                load_manifest(path)
+
+    def test_manifest_schema_copy_matches_packaged_copy(self):
+        repo_schema = Path("schemas/manifest.schema.json").read_text(encoding="utf-8")
+        packaged_schema = Path("src/repro_evidence_kit/schemas/manifest.schema.json").read_text(encoding="utf-8")
+        self.assertEqual(packaged_schema, repo_schema)
 
 
 if __name__ == "__main__":
