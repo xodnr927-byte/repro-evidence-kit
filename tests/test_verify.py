@@ -23,7 +23,7 @@ class VerifyTests(unittest.TestCase):
 
     def test_allowlist_normalizes_windows_style_paths(self):
         before = {"files": []}
-        after = {"files": [{"path": "reports\summary.json", "size": 2, "sha256": "a" * 64}]}
+        after = {"files": [{"path": r"reports\summary.json", "size": 2, "sha256": "a" * 64}]}
         result = verify_sandbox_output(before, after, allow_added={"reports/summary.json"})
         self.assertTrue(result["ok"])
         self.assertEqual(result["allowed"]["added"], ["reports/summary.json"])
