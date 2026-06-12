@@ -277,6 +277,66 @@ class CliTests(unittest.TestCase):
             self.assertEqual(bundle.read_text(encoding="utf-8"), bundle_text)
             self.assertEqual(key.read_text(encoding="utf-8"), key_text)
 
+    def test_output_commands_refuse_to_overwrite_any_input(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            before = root / "before.json"
+            after = root / "after.json"
+            bundle = root / "bundle.json"
+            key = root / "key.txt"
+            signature = root / "bundle.sig.json"
+            before_text = json.dumps({"files": []})
+            after_text = json.dumps({"files": []})
+            bundle_text = json.dumps({
+                "schema_version": "1.0",
+                "title": "Synthetic",
+                "inputs": [],
+                "commands": [],
+                "outputs": [],
+            })
+            before.write_text(before_text, encoding="utf-8")
+            after.write_text(after_text, encoding="utf-8")
+            bundle.write_text(bundle_text, encoding="utf-8")
+            key.write_text("synthetic key\n", encoding="utf-8")
+            self.assertEqual(main(["evidence", "sign", str(bundle), "--key", str(key), "-o", str(signature)]), 0)
+
+            commands = [
+                ["manifest", "create", str(before), "-o", str(before)],
+                ["manifest", "diff", str(before), str(after), "-o", str(before)],
+                ["verify", "sandbox-run", str(before), str(after), "-o", str(after)],
+                ["evidence", "validate", str(bundle), "-o", str(bundle)],
+                [
+                    "evidence",
+                    "verify-signature",
+                    str(bundle),
+                    "--signature",
+                    str(signature),
+                    "--key",
+                    str(key),
+                    "-o",
+                    str(signature),
+                ],
+            ]
+            for command in commands:
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    code = main(command)
+                self.assertEqual(code, 2, command)
+                self.assertIn("must not overwrite", stderr.getvalue())
+
+            self.assertEqual(before.read_text(encoding="utf-8"), before_text)
+            self.assertEqual(after.read_text(encoding="utf-8"), after_text)
+            self.assertEqual(bundle.read_text(encoding="utf-8"), bundle_text)
+
+    def test_manifest_create_missing_input_returns_2(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = main(["manifest", "create", str(root / "missing")])
+            self.assertEqual(code, 2)
+            self.assertIn("does not exist", stderr.getvalue())
+
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_verify_signature_cli_schema_option(self):
         with tempfile.TemporaryDirectory() as td:

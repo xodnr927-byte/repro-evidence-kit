@@ -4,6 +4,8 @@ import fnmatch
 import hashlib
 import json
 import os
+import stat
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,6 +32,12 @@ def iter_files(root: Path) -> Iterable[Path]:
         yield root
         return
     for dirpath, dirnames, filenames in os.walk(root):
+        current = Path(dirpath)
+        symlink_dirs = [current / name for name in dirnames if (current / name).is_symlink()]
+        symlink_files = [current / name for name in filenames if (current / name).is_symlink()]
+        symlinks = symlink_dirs + symlink_files
+        if symlinks:
+            raise ValueError(f"manifest input contains symlink: {symlinks[0]}")
         dirnames[:] = sorted(d for d in dirnames if d not in {".git", "__pycache__"})
         for name in sorted(filenames):
             yield Path(dirpath) / name
@@ -61,6 +69,12 @@ def create_manifest(
     include: Sequence[str] | None = None,
     exclude: Sequence[str] | None = None,
 ) -> dict[str, Any]:
+    if not root.exists():
+        raise ValueError(f"manifest input does not exist: {root}")
+    if root.is_symlink():
+        raise ValueError(f"manifest input must not be a symlink: {root}")
+    if not root.is_file() and not root.is_dir():
+        raise ValueError(f"manifest input must be a file or directory: {root}")
     root = root.resolve()
     include_patterns = normalize_filter_patterns(include)
     exclude_patterns = normalize_filter_patterns(exclude)
@@ -109,16 +123,32 @@ def write_json(data: Any, path: Path | None) -> None:
     if path is None:
         print(text, end="")
     else:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
+        atomic_write_text(text, path)
 
 
 def write_text(text: str, path: Path | None) -> None:
     if path is None:
         print(text, end="")
     else:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
+        atomic_write_text(text, path)
+
+
+def atomic_write_text(text: str, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existing_mode = stat.S_IMODE(path.stat().st_mode) if path.exists() else None
+    temp_path = path.parent / f".{path.name}.{uuid.uuid4().hex}.tmp"
+    fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as file:
+            file.write(text)
+            file.flush()
+            os.fsync(file.fileno())
+        if existing_mode is not None:
+            os.chmod(temp_path, existing_mode)
+        os.replace(temp_path, path)
+    except BaseException:
+        temp_path.unlink(missing_ok=True)
+        raise
 
 
 @dataclass(frozen=True)
