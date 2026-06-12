@@ -22,6 +22,15 @@ def _csv_list(values: list[str] | None) -> list[str]:
     return [part.strip() for value in values for part in value.split(",") if part.strip()]
 
 
+def _ensure_output_does_not_overwrite_input(output: Path | None, *inputs: Path | None) -> None:
+    if output is None:
+        return
+    output_path = output.resolve()
+    for input_path in inputs:
+        if input_path is not None and output_path == input_path.resolve():
+            raise ValueError(f"output must not overwrite input file: {input_path}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="repro-evidence", description="Reproducible artifact manifest and evidence-bundle tools.")
     parser.add_argument("--version", action="version", version="repro-evidence 0.4.1")
@@ -87,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         if args.command == "manifest" and args.manifest_command == "create":
+            _ensure_output_does_not_overwrite_input(args.output, args.path)
             write_json(
                 create_manifest(
                     args.path,
@@ -98,6 +108,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         if args.command == "manifest" and args.manifest_command == "diff":
+            _ensure_output_does_not_overwrite_input(args.output, args.before, args.after)
             result = diff_manifests(load_json(args.before), load_json(args.after))
             if args.format == "markdown":
                 write_text(result.as_markdown(), args.output)
@@ -105,6 +116,7 @@ def main(argv: list[str] | None = None) -> int:
                 write_json(result.as_dict(), args.output)
             return 0
         if args.command == "verify" and args.verify_command == "sandbox-run":
+            _ensure_output_does_not_overwrite_input(args.output, args.before, args.after)
             result = verify_sandbox_output(
                 load_json(args.before),
                 load_json(args.after),
@@ -123,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
                 write_json(result, args.output)
             return 0 if result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "validate":
+            _ensure_output_does_not_overwrite_input(args.output, args.bundle, args.schema_path)
             bundle = load_evidence(args.bundle)
             result = validate_evidence_bundle_schema(bundle, args.schema_path) if args.schema else validate_evidence_bundle(bundle)
             if args.format == "junit":
@@ -137,13 +150,18 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             if args.output is None:
                 raise ValueError("evidence sign requires -o/--output unless --dry-run is used")
-            output_path = args.output.resolve()
-            if output_path in {args.bundle.resolve(), args.key.resolve()}:
-                raise ValueError("signature output must not overwrite the bundle or key file")
+            _ensure_output_does_not_overwrite_input(args.output, args.bundle, args.key)
             sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
             write_json(sidecar, args.output)
             return 0
         if args.command == "evidence" and args.evidence_command == "verify-signature":
+            _ensure_output_does_not_overwrite_input(
+                args.output,
+                args.bundle,
+                args.signature,
+                args.key,
+                args.schema_path,
+            )
             sidecar = load_signature_sidecar(args.signature)
             result = verify_bundle_signature(args.bundle, sidecar, args.key)
             if args.schema:

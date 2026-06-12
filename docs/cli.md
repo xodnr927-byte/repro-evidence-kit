@@ -15,6 +15,7 @@ repro-evidence manifest create PATH -o manifest.json
 Each file entry includes relative path, byte size, and SHA-256.
 
 Manifest paths are serialized with `/` separators so manifests stay reviewable across platforms.
+The input must exist and must be a regular file or directory. Symbolic links are rejected, including links nested inside a directory tree, so a manifest cannot silently read outside its declared root.
 
 Use `--include` and `--exclude` to filter large artifact trees by manifest-relative path:
 
@@ -39,6 +40,7 @@ repro-evidence manifest diff before.json after.json -o diff.json
 The report groups paths into `added`, `removed`, `changed`, and `unchanged`.
 
 When comparing manifests, Windows-style `\` separators are treated as the same logical path separators as `/`.
+Output paths must not overwrite any input file. File outputs are written to a temporary sibling and atomically replaced after the complete content is flushed.
 
 Use `--format markdown` when you want a review-friendly Markdown report instead of JSON:
 

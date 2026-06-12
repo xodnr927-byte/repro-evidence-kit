@@ -3,6 +3,9 @@
 ## Unreleased
 
 - Update installation documentation after the first verified PyPI publication.
+- Reject missing manifest inputs and symbolic links instead of producing ambiguous manifests.
+- Prevent CLI outputs from overwriting input files and write file outputs atomically.
+- Add executable smoke coverage for documented README command flows.
 
 ## 0.4.1 - 2026-06-07
 
