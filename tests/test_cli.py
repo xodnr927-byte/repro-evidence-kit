@@ -7,6 +7,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from repro_evidence_kit.cli import main
 from repro_evidence_kit.evidence import Draft202012Validator
@@ -361,6 +362,56 @@ class CliTests(unittest.TestCase):
                     code = main(command)
                 self.assertEqual(code, 2)
                 self.assertIn(expected, stderr.getvalue())
+
+    def test_corrupted_json_yaml_and_schema_inputs_return_2(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            broken_manifest = root / "broken-manifest.json"
+            broken_bundle_json = root / "broken-bundle.json"
+            broken_bundle_yaml = root / "broken-bundle.yaml"
+            broken_schema = root / "broken-schema.json"
+            valid_manifest = root / "valid-manifest.json"
+            valid_bundle = root / "valid-bundle.json"
+            broken_manifest.write_text('{"files": [', encoding="utf-8")
+            broken_bundle_json.write_text('{"title": ', encoding="utf-8")
+            broken_bundle_yaml.write_text("title: [unterminated", encoding="utf-8")
+            broken_schema.write_text('{"type": ', encoding="utf-8")
+            valid_manifest.write_text('{"files": []}', encoding="utf-8")
+            valid_bundle.write_text(json.dumps({
+                "schema_version": "1.0",
+                "title": "Synthetic",
+                "inputs": [],
+                "commands": [],
+                "outputs": [],
+            }), encoding="utf-8")
+
+            commands = [
+                ["manifest", "diff", str(broken_manifest), str(valid_manifest)],
+                ["evidence", "validate", str(broken_bundle_json)],
+                ["evidence", "validate", str(broken_bundle_yaml)],
+                ["evidence", "validate", str(valid_bundle), "--schema", "--schema-path", str(broken_schema)],
+            ]
+            for command in commands:
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    code = main(command)
+                self.assertEqual(code, 2, command)
+                self.assertIn("error:", stderr.getvalue())
+
+    def test_unwritable_output_returns_2_without_partial_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = root / "source.txt"
+            output = root / "manifest.json"
+            source.write_text("source", encoding="utf-8")
+            stderr = io.StringIO()
+            with mock.patch("repro_evidence_kit.manifest.os.open", side_effect=PermissionError("permission denied")):
+                with contextlib.redirect_stderr(stderr):
+                    code = main(["manifest", "create", str(source), "-o", str(output)])
+            self.assertEqual(code, 2)
+            self.assertIn("permission denied", stderr.getvalue())
+            self.assertFalse(output.exists())
+            self.assertEqual(list(root.glob(f".{output.name}.*.tmp")), [])
 
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_evidence_verify_signature_cli_schema_option(self):

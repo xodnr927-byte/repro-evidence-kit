@@ -9,6 +9,7 @@
 - Add manifest and sandbox-SARIF schemas plus fail-closed manifest entry, metadata, and duplicate-path validation.
 - Add enforced Ruff, Mypy, branch-coverage, and repository-independent test execution gates.
 - Add dependency auditing, CycloneDX SBOM artifacts, Dependabot updates, and release build-provenance attestations.
+- Add regression coverage for permission failures, interrupted writes, large manifests, Unicode paths, path collisions, and corrupted JSON/YAML/Schema inputs.
 
 ## 0.4.1 - 2026-06-07
 
