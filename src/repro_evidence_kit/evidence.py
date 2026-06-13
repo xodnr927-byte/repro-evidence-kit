@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import json
 import xml.etree.ElementTree as ET
-from importlib import resources
+from importlib import import_module, resources
 from pathlib import Path
 from typing import Any
 
 try:
-    import yaml
-except Exception:  # pragma: no cover
+    yaml: Any = import_module("yaml")
+except ImportError:  # pragma: no cover
     yaml = None
 
 try:
-    from jsonschema import Draft202012Validator
-except Exception:  # pragma: no cover
+    Draft202012Validator: Any = import_module("jsonschema").Draft202012Validator
+except ImportError:  # pragma: no cover
     Draft202012Validator = None
 
 REPO_SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "evidence-bundle.schema.json"

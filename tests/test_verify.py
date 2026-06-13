@@ -8,6 +8,8 @@ from pathlib import Path
 from repro_evidence_kit.evidence import Draft202012Validator
 from repro_evidence_kit.verify import sandbox_result_as_junit, sandbox_result_as_sarif, verify_sandbox_output
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 class VerifyTests(unittest.TestCase):
     def test_unexpected_added_path_fails(self):
@@ -107,13 +109,13 @@ class VerifyReportingTests(unittest.TestCase):
             {"files": [{"path": "report.json", "size": 2, "sha256": "a" * 64}]},
         )
         sarif = json.loads(sandbox_result_as_sarif(result))
-        schema = json.loads(Path("schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8"))
+        schema = json.loads((REPO_ROOT / "schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8"))
         errors = list(Draft202012Validator(schema).iter_errors(sarif))
         self.assertEqual(errors, [])
 
     def test_sarif_schema_copy_matches_packaged_copy(self):
-        repo_schema = Path("schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8")
-        packaged_schema = Path("src/repro_evidence_kit/schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8")
+        repo_schema = (REPO_ROOT / "schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8")
+        packaged_schema = (REPO_ROOT / "src/repro_evidence_kit/schemas/sandbox-sarif.schema.json").read_text(encoding="utf-8")
         self.assertEqual(packaged_schema, repo_schema)
 
 

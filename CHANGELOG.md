@@ -7,6 +7,7 @@
 - Prevent CLI outputs from overwriting input files and write file outputs atomically.
 - Add executable smoke coverage for documented README command flows.
 - Add manifest and sandbox-SARIF schemas plus fail-closed manifest entry, metadata, and duplicate-path validation.
+- Add enforced Ruff, Mypy, branch-coverage, and repository-independent test execution gates.
 
 ## 0.4.1 - 2026-06-07
 
