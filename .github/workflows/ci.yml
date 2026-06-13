@@ -47,6 +47,23 @@ jobs:
           cd "$(mktemp -d)"
           python -m unittest discover -s "$GITHUB_WORKSPACE/tests"
 
+  dependency-audit:
+    name: Dependency audit and SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pip-audit
+      - run: pip-audit . --strict
+      - run: pip-audit . --strict --format cyclonedx-json --output dependency-sbom.cdx.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dependency-sbom
+          path: dependency-sbom.cdx.json
+          if-no-files-found: error
+
   package:
     name: Build package distributions
     runs-on: ubuntu-latest
