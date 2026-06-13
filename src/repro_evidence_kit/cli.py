@@ -109,15 +109,15 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "manifest" and args.manifest_command == "diff":
             _ensure_output_does_not_overwrite_input(args.output, args.before, args.after)
-            result = diff_manifests(load_manifest(args.before), load_manifest(args.after))
+            manifest_diff = diff_manifests(load_manifest(args.before), load_manifest(args.after))
             if args.format == "markdown":
-                write_text(result.as_markdown(), args.output)
+                write_text(manifest_diff.as_markdown(), args.output)
             else:
-                write_json(result.as_dict(), args.output)
+                write_json(manifest_diff.as_dict(), args.output)
             return 0
         if args.command == "verify" and args.verify_command == "sandbox-run":
             _ensure_output_does_not_overwrite_input(args.output, args.before, args.after)
-            result = verify_sandbox_output(
+            sandbox_result = verify_sandbox_output(
                 load_manifest(args.before),
                 load_manifest(args.after),
                 allow_added=_csv_set(args.allow_added),
@@ -128,21 +128,21 @@ def main(argv: list[str] | None = None) -> int:
                 require_removed=_csv_set(args.require_removed),
             )
             if args.format == "junit":
-                write_text(sandbox_result_as_junit(result), args.output)
+                write_text(sandbox_result_as_junit(sandbox_result), args.output)
             elif args.format == "sarif":
-                write_text(sandbox_result_as_sarif(result), args.output)
+                write_text(sandbox_result_as_sarif(sandbox_result), args.output)
             else:
-                write_json(result, args.output)
-            return 0 if result["ok"] else 1
+                write_json(sandbox_result, args.output)
+            return 0 if sandbox_result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "validate":
             _ensure_output_does_not_overwrite_input(args.output, args.bundle, args.schema_path)
             bundle = load_evidence(args.bundle)
-            result = validate_evidence_bundle_schema(bundle, args.schema_path) if args.schema else validate_evidence_bundle(bundle)
+            evidence_result = validate_evidence_bundle_schema(bundle, args.schema_path) if args.schema else validate_evidence_bundle(bundle)
             if args.format == "junit":
-                write_text(evidence_result_as_junit(result), args.output)
+                write_text(evidence_result_as_junit(evidence_result), args.output)
             else:
-                write_json(result, args.output)
-            return 0 if result["ok"] else 1
+                write_json(evidence_result, args.output)
+            return 0 if evidence_result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "sign":
             if args.dry_run:
                 sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
@@ -163,16 +163,16 @@ def main(argv: list[str] | None = None) -> int:
                 args.schema_path,
             )
             sidecar = load_signature_sidecar(args.signature)
-            result = verify_bundle_signature(args.bundle, sidecar, args.key)
+            signature_result = verify_bundle_signature(args.bundle, sidecar, args.key)
             if args.schema:
                 schema_result = validate_signature_sidecar_schema(sidecar, args.schema_path)
-                result["schema"] = schema_result
-                result["ok"] = bool(result["ok"] and schema_result["ok"])
+                signature_result["schema"] = schema_result
+                signature_result["ok"] = bool(signature_result["ok"] and schema_result["ok"])
             if args.format == "text":
-                write_text(signature_verification_as_text(result), args.output)
+                write_text(signature_verification_as_text(signature_result), args.output)
             else:
-                write_json(result, args.output)
-            return 0 if result["ok"] else 1
+                write_json(signature_result, args.output)
+            return 0 if signature_result["ok"] else 1
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

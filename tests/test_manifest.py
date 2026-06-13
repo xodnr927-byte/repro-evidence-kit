@@ -7,6 +7,8 @@ from unittest import mock
 
 from repro_evidence_kit.manifest import create_manifest, diff_manifests, load_manifest, validate_manifest, write_text
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 class ManifestTests(unittest.TestCase):
     def test_create_manifest_hashes_files(self):
@@ -158,8 +160,8 @@ class ManifestTests(unittest.TestCase):
                 load_manifest(path)
 
     def test_manifest_schema_copy_matches_packaged_copy(self):
-        repo_schema = Path("schemas/manifest.schema.json").read_text(encoding="utf-8")
-        packaged_schema = Path("src/repro_evidence_kit/schemas/manifest.schema.json").read_text(encoding="utf-8")
+        repo_schema = (REPO_ROOT / "schemas/manifest.schema.json").read_text(encoding="utf-8")
+        packaged_schema = (REPO_ROOT / "src/repro_evidence_kit/schemas/manifest.schema.json").read_text(encoding="utf-8")
         self.assertEqual(packaged_schema, repo_schema)
 
 

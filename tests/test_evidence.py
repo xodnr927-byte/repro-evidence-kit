@@ -5,6 +5,8 @@ from pathlib import Path
 
 from repro_evidence_kit.evidence import Draft202012Validator, validate_evidence_bundle, validate_evidence_bundle_schema
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 
 class EvidenceTests(unittest.TestCase):
     def test_valid_bundle(self):
@@ -50,8 +52,8 @@ class EvidenceTests(unittest.TestCase):
         self.assertTrue(any("sha256" in error for error in schema_result["errors"]))
 
     def test_packaged_schema_matches_checked_in_schema(self):
-        repo_schema = Path("schemas/evidence-bundle.schema.json").read_text(encoding="utf-8")
-        packaged_schema = Path("src/repro_evidence_kit/schemas/evidence-bundle.schema.json").read_text(encoding="utf-8")
+        repo_schema = (REPO_ROOT / "schemas/evidence-bundle.schema.json").read_text(encoding="utf-8")
+        packaged_schema = (REPO_ROOT / "src/repro_evidence_kit/schemas/evidence-bundle.schema.json").read_text(encoding="utf-8")
         self.assertEqual(packaged_schema, repo_schema)
 
 
@@ -89,6 +91,6 @@ class SignatureSidecarSchemaTests(unittest.TestCase):
         self.assertTrue(any("algorithm" in error for error in result["errors"]))
 
     def test_packaged_signature_schema_matches_checked_in_schema(self):
-        repo_schema = Path("schemas/signature-sidecar.schema.json").read_text(encoding="utf-8")
-        packaged_schema = Path("src/repro_evidence_kit/schemas/signature-sidecar.schema.json").read_text(encoding="utf-8")
+        repo_schema = (REPO_ROOT / "schemas/signature-sidecar.schema.json").read_text(encoding="utf-8")
+        packaged_schema = (REPO_ROOT / "src/repro_evidence_kit/schemas/signature-sidecar.schema.json").read_text(encoding="utf-8")
         self.assertEqual(packaged_schema, repo_schema)
