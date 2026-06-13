@@ -30,8 +30,8 @@ jobs:
   evidence:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e .
@@ -52,13 +52,13 @@ jobs:
   manifest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e .
       - run: python -m repro_evidence_kit manifest create examples/dummy-binary -o manifest.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: manifest
           path: manifest.json
@@ -78,8 +78,8 @@ jobs:
   evidence:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e ".[schema]"
@@ -99,7 +99,7 @@ jobs:
           python -m repro_evidence_kit evidence validate \
             examples/evidence-bundle.yaml \
             --schema
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: filtered-evidence
           path: filtered-manifest.json
@@ -119,8 +119,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e .
@@ -147,8 +147,8 @@ jobs:
   verify-report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e .
@@ -163,7 +163,7 @@ jobs:
             --require-added report.json \
             --format junit \
             -o sandbox-verification.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sandbox-verification-junit
@@ -186,8 +186,8 @@ jobs:
   signed-evidence:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e ".[schema]"
@@ -217,8 +217,8 @@ jobs:
   examples:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e .
@@ -239,8 +239,8 @@ jobs:
   sandbox-sarif:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - run: python -m pip install -e .
@@ -254,7 +254,7 @@ jobs:
             --require-added report.json \
             --format sarif \
             -o sandbox-verification.sarif
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sandbox-verification-sarif
@@ -268,7 +268,7 @@ jobs:
     python -m repro_evidence_kit evidence validate examples/evidence-bundle.yaml \
       --format junit \
       -o evidence-validation.xml
-- uses: actions/upload-artifact@v4
+- uses: actions/upload-artifact@v7
   if: always()
   with:
     name: evidence-validation-junit
