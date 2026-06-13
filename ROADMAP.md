@@ -2,6 +2,16 @@
 
 ## Recently completed
 
+### v0.4.2
+
+- Fail-closed manifest input, symlink, duplicate-path, and metadata validation.
+- Atomic file outputs and input-overwrite protection.
+- Manifest and sandbox-SARIF schemas with packaged contract checks.
+- Executable README command smoke coverage.
+- Ruff, Mypy, branch-coverage, and arbitrary-working-directory quality gates.
+- Dependency auditing, CycloneDX SBOM artifacts, Dependabot, and release build provenance.
+- Boundary coverage for permission failures, large trees, Unicode paths, and corrupted structured inputs.
+
 ### v0.4.1
 
 - PyPI publication completed.
@@ -30,8 +40,7 @@
 ## Near-term polish
 
 - Keep examples synthetic-only.
-- Expand CI recipes for signed-bundle verification and example smoke checks.
-- Add contract and schema tests for the existing SARIF output.
+- Review future changes against the v0.4.2 file-safety and validation contracts.
 
 ## Later ideas
 

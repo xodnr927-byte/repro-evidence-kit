@@ -9,11 +9,19 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from repro_evidence_kit import __version__
 from repro_evidence_kit.cli import main
 from repro_evidence_kit.evidence import Draft202012Validator
 
 
 class CliTests(unittest.TestCase):
+    def test_version_uses_package_version(self):
+        with self.assertRaises(SystemExit) as raised:
+            with contextlib.redirect_stdout(io.StringIO()) as stdout:
+                main(["--version"])
+        self.assertEqual(raised.exception.code, 0)
+        self.assertEqual(stdout.getvalue().strip(), f"repro-evidence {__version__}")
+
     def test_manifest_create_cli(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

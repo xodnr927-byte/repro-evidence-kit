@@ -4,6 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from . import __version__
 from .evidence import evidence_result_as_junit, load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema, validate_signature_sidecar_schema
 from .manifest import create_manifest, diff_manifests, load_manifest, write_json, write_text
 from .signing import load_signature_sidecar, sign_bundle, signature_verification_as_text, verify_bundle_signature
@@ -33,7 +34,7 @@ def _ensure_output_does_not_overwrite_input(output: Path | None, *inputs: Path |
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="repro-evidence", description="Reproducible artifact manifest and evidence-bundle tools.")
-    parser.add_argument("--version", action="version", version="repro-evidence 0.4.1")
+    parser.add_argument("--version", action="version", version=f"repro-evidence {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
     manifest = sub.add_parser("manifest", help="Create or compare file manifests")

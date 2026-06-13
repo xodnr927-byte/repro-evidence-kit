@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.2 - 2026-06-13
+
 - Update installation documentation after the first verified PyPI publication.
 - Reject missing manifest inputs and symbolic links instead of producing ambiguous manifests.
 - Prevent CLI outputs from overwriting input files and write file outputs atomically.
@@ -10,6 +12,7 @@
 - Add enforced Ruff, Mypy, branch-coverage, and repository-independent test execution gates.
 - Add dependency auditing, CycloneDX SBOM artifacts, Dependabot updates, and release build-provenance attestations.
 - Add regression coverage for permission failures, interrupted writes, large manifests, Unicode paths, path collisions, and corrupted JSON/YAML/Schema inputs.
+- Use one package version source for build metadata and CLI version output.
 
 ## 0.4.1 - 2026-06-07
 

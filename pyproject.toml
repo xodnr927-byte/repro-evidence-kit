@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "repro-evidence-kit"
-version = "0.4.1"
+dynamic = ["version"]
 description = "Reproducible artifact manifests, sandbox-output verification, and evidence-bundle validation."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -50,6 +50,9 @@ Issues = "https://github.com/xodnr927-byte/repro-evidence-kit/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/repro_evidence_kit"]
+
+[tool.hatch.version]
+path = "src/repro_evidence_kit/__init__.py"
 
 [tool.coverage.run]
 branch = true
