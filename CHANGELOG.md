@@ -8,6 +8,7 @@
 - Add executable smoke coverage for documented README command flows.
 - Add manifest and sandbox-SARIF schemas plus fail-closed manifest entry, metadata, and duplicate-path validation.
 - Add enforced Ruff, Mypy, branch-coverage, and repository-independent test execution gates.
+- Add dependency auditing, CycloneDX SBOM artifacts, Dependabot updates, and release build-provenance attestations.
 
 ## 0.4.1 - 2026-06-07
 
