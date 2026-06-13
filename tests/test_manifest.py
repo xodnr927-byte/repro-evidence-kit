@@ -120,6 +120,37 @@ class ManifestTests(unittest.TestCase):
             self.assertEqual(output.read_text(encoding="utf-8"), "original\n")
             self.assertEqual(list(output.parent.glob(f".{output.name}.*.tmp")), [])
 
+    def test_atomic_write_permission_failure_preserves_original(self):
+        with tempfile.TemporaryDirectory() as td:
+            output = Path(td) / "result.txt"
+            output.write_text("original\n", encoding="utf-8")
+            with mock.patch("repro_evidence_kit.manifest.os.open", side_effect=PermissionError("permission denied")):
+                with self.assertRaisesRegex(PermissionError, "permission denied"):
+                    write_text("replacement\n", output)
+            self.assertEqual(output.read_text(encoding="utf-8"), "original\n")
+            self.assertEqual(list(output.parent.glob(f".{output.name}.*.tmp")), [])
+
+    def test_create_manifest_handles_large_file_set_deterministically(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            for index in range(1500):
+                (root / f"artifact-{index:04d}.txt").write_text(str(index), encoding="utf-8")
+            manifest = create_manifest(root)
+        paths = [item["path"] for item in manifest["files"]]
+        self.assertEqual(manifest["file_count"], 1500)
+        self.assertEqual(paths, sorted(paths))
+        self.assertEqual(paths[0], "artifact-0000.txt")
+        self.assertEqual(paths[-1], "artifact-1499.txt")
+
+    def test_create_manifest_preserves_unicode_and_special_paths(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            names = ["space name.txt", "보고서-한글.json", "emoji-😀.bin", "brackets-[draft].txt"]
+            for name in names:
+                (root / name).write_text(name, encoding="utf-8")
+            manifest = create_manifest(root)
+        self.assertEqual([item["path"] for item in manifest["files"]], sorted(names))
+
     def test_validate_manifest_rejects_duplicate_normalized_paths(self):
         errors = validate_manifest({
             "files": [
