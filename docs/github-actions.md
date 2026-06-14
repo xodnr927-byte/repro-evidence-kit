@@ -229,6 +229,16 @@ jobs:
 
 Use this when a downstream code-scanning integration accepts SARIF. The SARIF report is a compact policy-failure adapter for sandbox output verification.
 
+The repository's optional `.github/workflows/sandbox-sarif.yml` workflow
+generates a synthetic passing report and uploads it to GitHub Code Scanning on
+pushes to `main`. It grants `security-events: write` only to the upload job and
+does not run on pull requests, where untrusted forks do not receive write
+permissions.
+
+This integration publishes sandbox allowlist/required-output findings. It is
+not vulnerability analysis, source-code scanning, or evidence that an artifact
+is safe.
+
 ```yaml
 name: Sandbox SARIF
 

@@ -1,0 +1,39 @@
+name: Sandbox SARIF upload
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    name: Upload sandbox-policy SARIF
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install .
+      - name: Generate synthetic sandbox-policy SARIF
+        run: |
+          mkdir -p sandbox
+          printf 'input\n' > sandbox/input.txt
+          python -m repro_evidence_kit manifest create sandbox -o before.json
+          printf '{"ok": true}\n' > sandbox/report.json
+          python -m repro_evidence_kit manifest create sandbox -o after.json
+          python -m repro_evidence_kit verify sandbox-run before.json after.json \
+            --allow-added report.json \
+            --require-added report.json \
+            --format sarif \
+            -o sandbox-verification.sarif
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: sandbox-verification.sarif
+          category: repro-evidence-sandbox-policy
