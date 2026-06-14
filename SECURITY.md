@@ -8,7 +8,9 @@ The current early release line is `0.4.x`. Security fixes are handled on a best-
 
 ## Reporting a vulnerability
 
-Use a GitHub private security advisory when possible. If that is not available, contact the maintainer through GitHub without including sensitive artifacts in the initial public message.
+Use [GitHub private vulnerability reporting](https://github.com/xodnr927-byte/repro-evidence-kit/security/advisories/new).
+If that is not available, contact the maintainer through GitHub without
+including sensitive artifacts in the initial public message.
 
 Do not attach or paste any of the following in public issues, pull requests, comments, or logs:
 
