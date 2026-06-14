@@ -29,6 +29,17 @@ jobs:
         run: |
           ! grep -RInE 'PRO7|조조전|ekd5|EEX|S_44|R_44|Phase4|Frida|xdbg|Cao Cao|save editor|game mod|/mnt/c/Users/xodnr/Desktop/new|_modding_tools' . --exclude-dir=.git --exclude=ci.yml
 
+  windows-filesystem:
+    name: Windows filesystem contract
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install ".[schema]"
+      - run: python -m unittest discover -s tests
+
   quality:
     name: Static analysis and coverage
     runs-on: ubuntu-latest
