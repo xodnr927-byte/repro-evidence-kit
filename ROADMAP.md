@@ -2,6 +2,17 @@
 
 ## Recently completed
 
+### Post-v0.4.2 repository hardening
+
+- Protected `main` with pull-request, required-CI, linear-history, and
+  conversation-resolution gates.
+- Enabled Dependabot security updates and private vulnerability reporting.
+- Added the canonical Apache License 2.0 text, support guidance, and a code of
+  conduct.
+- Added required Windows/Python 3.12 filesystem-contract CI.
+- Proved GitHub Code Scanning consumption of the synthetic sandbox-policy SARIF
+  output with job-scoped upload permissions.
+
 ### v0.4.2
 
 - Fail-closed manifest input, symlink, duplicate-path, and metadata validation.
@@ -41,11 +52,14 @@
 
 - Keep examples synthetic-only.
 - Review future changes against the v0.4.2 file-safety and validation contracts.
+- Design signer trust, key rotation, and revocation policy in
+  [issue #53](https://github.com/xodnr927-byte/repro-evidence-kit/issues/53)
+  before expanding the signed-sidecar prototype.
 
 ## Later ideas
 
-- Optional GitHub code scanning integration for the existing SARIF output.
-- Richer signed bundle trust policies after the sidecar contract is stable.
+- Publish bounded contributor issues only when their acceptance criteria and
+  trust boundaries are concrete.
 
 ## Non-goals
 
