@@ -109,6 +109,7 @@ The command exits `0` when all changes are allowed and `1` when unexpected chang
 - [Evidence bundle format](docs/evidence-bundle-format.md)
 - [Use cases](docs/use-cases.md)
 - [Signed evidence bundles design note](docs/signed-bundles.md)
+- [Signer trust, rotation, and revocation policy](docs/signer-trust-policy.md)
 - [Maintainer workflow](docs/maintainer-workflow.md)
 - [Release checklist](docs/release-checklist.md)
 - [PyPI publishing](docs/publishing.md)

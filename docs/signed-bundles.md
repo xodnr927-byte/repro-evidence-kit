@@ -89,6 +89,10 @@ The prototype uses a local shared key file so it can run without external servic
 
 See `examples/signed-bundle/README.md` for a minimal synthetic workflow.
 
+For the proposed caller-selected signer policy, key rotation, revocation
+semantics, and version 1 compatibility boundary, see
+[Signer trust, rotation, and revocation policy](signer-trust-policy.md).
+
 ## Test fixture policy
 
 If tests need key material, use local synthetic test keys only. Test keys must be labeled as fixtures and must not be suitable for real trust decisions.
