@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 MANIFEST_VERSION = "1.0"
+IMPLICIT_EXCLUDED_DIRECTORIES = (".git", "__pycache__")
 _HEX64 = set("0123456789abcdefABCDEF")
 
 
@@ -39,7 +40,7 @@ def iter_files(root: Path) -> Iterable[Path]:
         symlinks = symlink_dirs + symlink_files
         if symlinks:
             raise ValueError(f"manifest input contains symlink: {symlinks[0]}")
-        dirnames[:] = sorted(d for d in dirnames if d not in {".git", "__pycache__"})
+        dirnames[:] = sorted(d for d in dirnames if d not in IMPLICIT_EXCLUDED_DIRECTORIES)
         for name in sorted(filenames):
             yield Path(dirpath) / name
 
@@ -99,6 +100,7 @@ def create_manifest(
         "root_name": root.name,
         "file_count": len(entries),
         "total_bytes": sum(e["size"] for e in entries),
+        "implicit_excluded_directories": list(IMPLICIT_EXCLUDED_DIRECTORIES),
         "files": entries,
     }
     if include_patterns or exclude_patterns:

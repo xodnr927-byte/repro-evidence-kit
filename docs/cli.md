@@ -28,7 +28,9 @@ repro-evidence manifest create artifacts \
   -o manifest.json
 ```
 
-Filters are deterministic and use POSIX-style manifest-relative globs or subtree paths. Includes run first; when at least one include is supplied, only matching files remain. Excludes run after includes and remove matching files. Repeated flags and comma-separated values are accepted. When filters are used, the manifest records normalized include/exclude patterns in a `filters` metadata object.
+Filters are deterministic and use POSIX-style manifest-relative globs or subtree paths. Includes run first; when at least one include is supplied, only matching files remain. Excludes run after includes and remove matching files. Repeated flags and comma-separated values are accepted. When filters are used, the manifest records normalized include/exclude patterns in a `filters` metadata object. Every generated manifest also records the built-in `.git` and `__pycache__` directory exclusions in `implicit_excluded_directories`.
+
+File ordering and per-file digests are deterministic for identical inputs. The complete manifest JSON document is not byte-identical across runs because it records a wall-clock `created_at` value.
 
 ## `manifest diff`
 
