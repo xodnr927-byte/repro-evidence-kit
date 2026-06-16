@@ -112,6 +112,29 @@ class CliTests(unittest.TestCase):
             self.assertEqual(data["filters"]["include"], ["reports"])
             self.assertEqual(data["filters"]["exclude"], ["*.log"])
 
+    def test_manifest_create_cli_rejects_empty_filtered_selection(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            output = root / "manifest.json"
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = main(["manifest", "create", str(root), "--include", "missing", "-o", str(output)])
+            self.assertEqual(code, 2)
+            self.assertIn("filters selected no files", stderr.getvalue())
+            self.assertFalse(output.exists())
+
+    def test_manifest_create_cli_allows_empty_filtered_selection_when_explicit(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            output = root / "manifest.json"
+            code = main(["manifest", "create", str(root), "--include", "missing", "--allow-empty", "-o", str(output)])
+            self.assertEqual(code, 0)
+            data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(data["file_count"], 0)
+            self.assertEqual(data["files"], [])
+
     def test_verify_sandbox_junit_output_keeps_failure_exit_code(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

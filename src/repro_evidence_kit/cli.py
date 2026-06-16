@@ -45,6 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("--include-mtime", action="store_true")
     create.add_argument("--include", action="append", help="Manifest-relative glob or subtree path to include; may be repeated or comma-separated")
     create.add_argument("--exclude", action="append", help="Manifest-relative glob or subtree path to exclude after includes; may be repeated or comma-separated")
+    create.add_argument("--allow-empty", action="store_true", help="Allow filters to select zero files instead of failing")
 
     diff = manifest_sub.add_parser("diff", help="Compare two JSON manifests")
     diff.add_argument("before", type=Path)
@@ -104,6 +105,7 @@ def main(argv: list[str] | None = None) -> int:
                     include_mtime=args.include_mtime,
                     include=_csv_list(args.include),
                     exclude=_csv_list(args.exclude),
+                    allow_empty=args.allow_empty,
                 ),
                 args.output,
             )
