@@ -23,10 +23,10 @@ Snapshot date: 2026-06-18.
 | --- | --- | --- | --- |
 | PR #57, manifest provenance boundaries | Merged after fresh CI | Narrows manifest determinism wording, records implicit directory exclusions, updates schema copies, and documents the sidecar-boundary wording. | Use merged `main` evidence when deciding issue #56 closure. |
 | PR #60, empty filtered manifest guard | Merged after conflict resolution and fresh CI | Narrow filter guard only: zero-file filtered selections fail by default and `--allow-empty` is explicit. | Include in the next release notes as a false-green fix. |
-| PR #61, external review ledger | Open draft | Documentation-only holding and classification surface. | Merge only after this snapshot matches current `main`. |
-| PR #58, signer trust policy | Open draft, behind `main` | Design-only. Does not implement signer trust, key rotation, revocation, process provenance, or identity trust. | Rebase/update after the merged manifest work; keep design-only until reviewed against issue #53. |
-| Issue #56, manifest determinism and implicit exclusions | Open at snapshot time | Tracks provenance wording, implicit exclusions, schema coverage, and sidecar-boundary docs. | Close only if current merged `main` satisfies the acceptance criteria. |
-| Issue #53, signer trust/key rotation/revocation | Open | Design problem; current docs must not imply implementation. | Split implementation tasks only after design review is merged. |
+| PR #61, external review ledger | Merged after fresh CI | Documentation-only holding and classification surface. | Keep this ledger current when review state changes. |
+| PR #58, signer trust policy | Merged after fresh CI | Design-only documentation. Does not implement signer trust, key rotation, revocation, process provenance, or identity trust. | Implementation split into follow-up issues #62-#65. |
+| Issue #56, manifest determinism and implicit exclusions | Closed after PR #57 | Provenance wording, implicit exclusions, schema coverage, and sidecar-boundary docs landed on `main`. | Do not claim byte-reproducible manifest documents; `created_at` intentionally remains. |
+| Issue #53, signer trust/key rotation/revocation | Closed after PR #58 | Design issue only; no runtime/schema/resolver/CLI implementation is claimed by closure. | Follow implementation issues #62-#65 separately. |
 
 ## External feedback queue
 
@@ -55,7 +55,18 @@ GitHub check snapshots used before merge:
 - PR #57 after branch update: all required checks passed, then merged.
 - PR #60 after conflict resolution against PR #57: all required checks passed,
   then merged.
-- PR #61 before merge: rerun required after this ledger update.
+- PR #61 after ledger update: all required checks passed, then merged.
+- PR #58 after rebase onto merged manifest/ledger work: all required checks
+  passed, then merged.
+
+## Follow-up implementation queue
+
+| Issue | Scope | Boundary |
+| --- | --- | --- |
+| #62 | Signer trust policy schema and parser | No key resolution, signing, verification, public identity, or secret material. |
+| #63 | Local key resolver interfaces with synthetic fixtures | No policy-aware signing/verification or live secrets. |
+| #64 | Policy-aware signature verification | No policy-aware signing, public identity, signing-time proof, or safety claims. |
+| #65 | Policy-aware signing after verification behavior is reviewed | Waits for #64; no public identity, certificate chain, transparency log, or artifact correctness claims. |
 
 ## Non-goals still active
 
