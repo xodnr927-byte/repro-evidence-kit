@@ -12,12 +12,16 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 MANIFEST_VERSION = "1.0"
+IMPLICIT_EXCLUDED_DIRECTORIES = (".git", "__pycache__")
 _HEX64 = set("0123456789abcdefABCDEF")
 
 
 def normalize_manifest_path(path: object) -> str:
     """Return the manifest's portable logical path form."""
-    return str(path).replace("\\", "/")
+    normalized = str(path).replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -39,7 +43,7 @@ def iter_files(root: Path) -> Iterable[Path]:
         symlinks = symlink_dirs + symlink_files
         if symlinks:
             raise ValueError(f"manifest input contains symlink: {symlinks[0]}")
-        dirnames[:] = sorted(d for d in dirnames if d not in {".git", "__pycache__"})
+        dirnames[:] = sorted(d for d in dirnames if d not in IMPLICIT_EXCLUDED_DIRECTORIES)
         for name in sorted(filenames):
             yield Path(dirpath) / name
 
@@ -47,7 +51,8 @@ def iter_files(root: Path) -> Iterable[Path]:
 def normalize_filter_patterns(patterns: Sequence[str] | None) -> list[str]:
     if not patterns:
         return []
-    return sorted({normalize_manifest_path(pattern.strip()) for pattern in patterns if pattern.strip()})
+    normalized = {normalize_manifest_path(pattern.strip()) for pattern in patterns if pattern.strip()}
+    return sorted(pattern for pattern in normalized if pattern)
 
 
 def path_matches_filter(path: str, pattern: str) -> bool:
@@ -69,6 +74,7 @@ def create_manifest(
     include_mtime: bool = False,
     include: Sequence[str] | None = None,
     exclude: Sequence[str] | None = None,
+    allow_empty: bool = False,
 ) -> dict[str, Any]:
     if not root.exists():
         raise ValueError(f"manifest input does not exist: {root}")
@@ -93,15 +99,19 @@ def create_manifest(
         if include_mtime:
             item["mtime_ns"] = st.st_mtime_ns
         entries.append(item)
+    filters_requested = bool(include_patterns or exclude_patterns)
+    if filters_requested and not entries and not allow_empty:
+        raise ValueError("manifest filters selected no files; use --allow-empty to write an empty filtered manifest")
     manifest: dict[str, Any] = {
         "manifest_version": MANIFEST_VERSION,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "root_name": root.name,
         "file_count": len(entries),
         "total_bytes": sum(e["size"] for e in entries),
+        "implicit_excluded_directories": list(IMPLICIT_EXCLUDED_DIRECTORIES),
         "files": entries,
     }
-    if include_patterns or exclude_patterns:
+    if filters_requested:
         manifest["filters"] = {
             "include": include_patterns,
             "exclude": exclude_patterns,
