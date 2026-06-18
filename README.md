@@ -40,7 +40,7 @@ The project is intentionally target-neutral. It should help maintainers in CI, r
 
 ## Features
 
-- Create deterministic SHA-256 manifests for files or filtered directory trees.
+- Create SHA-256 manifests with deterministic file ordering and per-file digests for files or filtered directory trees.
 - Diff two manifests to identify added, removed, changed, and unchanged artifacts.
 - Verify sandbox/experiment outputs against explicit allowlists, with optional JUnit XML for CI report consumers.
 - Validate simple YAML or JSON evidence bundles, with optional JSON Schema checks.
@@ -60,7 +60,8 @@ For local development:
 ```bash
 python -m venv .venv
 . .venv/bin/activate
-pip install -e .
+pip install -e ".[dev]"
+pytest -q
 ```
 
 ## Quick start
@@ -76,6 +77,8 @@ For larger artifact trees, filter manifests with explicit include/exclude patter
 ```bash
 repro-evidence manifest create artifacts --include reports --exclude "*.tmp" -o manifest.json
 ```
+
+Manifest file ordering and per-file digests are deterministic for identical inputs. The manifest document itself includes `created_at`, so its complete JSON bytes are not identical across runs. Generated manifests also disclose the built-in `.git` and `__pycache__` directory exclusions in `implicit_excluded_directories`.
 
 For stricter evidence-bundle checks, install the optional schema extra and validate against the checked-in JSON Schema:
 

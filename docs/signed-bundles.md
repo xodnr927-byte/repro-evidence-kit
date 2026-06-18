@@ -66,6 +66,8 @@ Current sidecar fields, also covered by `schemas/signature-sidecar.schema.json`:
 }
 ```
 
+The HMAC authenticates the exact evidence-bundle payload bytes. Sidecar envelope metadata is not itself included in that HMAC; fields such as `key_hint` are advisory labels and must not be treated as authenticated signer identity.
+
 ## Canonical payload rule
 
 The first implementation should sign exact file bytes or a clearly documented canonical serialization, not an implicit Python object. Exact file bytes are simpler and reduce surprise, but they make whitespace and key ordering part of the signed payload. If canonical serialization is chosen later, it must be documented and covered by round-trip tests before release.
