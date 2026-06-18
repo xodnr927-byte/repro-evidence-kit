@@ -83,6 +83,32 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual([item["path"] for item in manifest["files"]], ["keep.txt", "noise.tmp"])
         self.assertNotIn("filters", manifest)
 
+    def test_create_manifest_filters_normalize_leading_dot_slash(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "reports").mkdir()
+            (root / "reports" / "result.json").write_text("{}", encoding="utf-8")
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            manifest = create_manifest(root, exclude=["./reports"])
+        self.assertEqual([item["path"] for item in manifest["files"]], ["keep.txt"])
+        self.assertEqual(manifest["filters"]["exclude"], ["reports"])
+
+    def test_create_manifest_rejects_empty_filtered_selection_by_default(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "filters selected no files"):
+                create_manifest(root, include=["missing"])
+
+    def test_create_manifest_allows_empty_filtered_selection_when_explicit(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            manifest = create_manifest(root, include=["missing"], allow_empty=True)
+        self.assertEqual(manifest["file_count"], 0)
+        self.assertEqual(manifest["files"], [])
+        self.assertEqual(manifest["filters"]["include"], ["missing"])
+
     def test_create_manifest_records_and_applies_implicit_directory_exclusions(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
