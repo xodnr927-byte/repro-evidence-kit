@@ -109,6 +109,18 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(manifest["files"], [])
         self.assertEqual(manifest["filters"]["include"], ["missing"])
 
+    def test_create_manifest_records_and_applies_implicit_directory_exclusions(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "keep.txt").write_text("keep", encoding="utf-8")
+            for excluded in (".git", "__pycache__"):
+                directory = root / excluded
+                directory.mkdir()
+                (directory / "ignored.txt").write_text("ignored", encoding="utf-8")
+            manifest = create_manifest(root)
+        self.assertEqual(manifest["implicit_excluded_directories"], [".git", "__pycache__"])
+        self.assertEqual([item["path"] for item in manifest["files"]], ["keep.txt"])
+
     def test_create_manifest_rejects_missing_input(self):
         with tempfile.TemporaryDirectory() as td:
             missing = Path(td) / "missing"

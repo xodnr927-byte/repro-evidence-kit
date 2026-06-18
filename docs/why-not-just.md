@@ -10,7 +10,7 @@ Its purpose is narrower: provide a low-friction review surface for generated or 
 
 `repro-evidence-kit` adds:
 
-- deterministic directory manifests,
+- deterministic file ordering and per-file digests in directory manifests,
 - include/exclude filtering,
 - added/removed/changed/unchanged classification,
 - evidence-bundle metadata,
@@ -18,6 +18,8 @@ Its purpose is narrower: provide a low-friction review surface for generated or 
 - optional CI report formats.
 
 A hash still proves only byte identity. It does not prove semantic correctness.
+
+Generated manifests include a wall-clock `created_at` value, so the complete manifest JSON document is not byte-identical across runs. They record the built-in `.git` and `__pycache__` directory exclusions in `implicit_excluded_directories`.
 
 ## Why not just `git diff`?
 
