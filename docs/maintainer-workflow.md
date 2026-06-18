@@ -2,6 +2,10 @@
 
 `repro-evidence-kit` is designed for maintainers who need small, reviewable proof around generated artifacts.
 
+## External review hold
+
+Use the [external review ledger](external-review-ledger.md) to collect outside feedback during review windows. The ledger is a holding surface: do not convert external comments into implementation, merge, release, or issue-closure claims until the active hold expires and the relevant PRs are rechecked.
+
 ## Pull request review
 
 A maintainer can ask contributors to include:
