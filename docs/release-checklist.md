@@ -70,4 +70,5 @@ Use this checklist before tagging a release. It is maintainer guidance, not a tr
     target-specific evidence.
 
 For the one-time Trusted Publisher setup and automated release flow, see
-[Publishing to PyPI](publishing.md).
+[Publishing to PyPI](publishing.md). For narrow release-to-PyPI consistency
+records, see [Release/PyPI evidence records](release-pypi-evidence.md).
