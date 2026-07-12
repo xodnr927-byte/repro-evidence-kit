@@ -137,8 +137,9 @@ class TrustPolicyTests(unittest.TestCase):
 
     @unittest.skipIf(Draft202012Validator is None, "jsonschema optional dependency is not installed")
     def test_checked_in_and_packaged_schema_validate_shape(self):
-        repo_schema = Path("schemas/trust-policy.schema.json")
-        packaged_schema = Path("src/repro_evidence_kit/schemas/trust-policy.schema.json")
+        repo_root = Path(__file__).resolve().parents[1]
+        repo_schema = repo_root / "schemas/trust-policy.schema.json"
+        packaged_schema = repo_root / "src/repro_evidence_kit/schemas/trust-policy.schema.json"
         self.assertEqual(repo_schema.read_text(encoding="utf-8"), packaged_schema.read_text(encoding="utf-8"))
         schema = json.loads(repo_schema.read_text(encoding="utf-8"))
         self.assertEqual(default_trust_policy_schema_path().read_text(encoding="utf-8"), repo_schema.read_text(encoding="utf-8"))
