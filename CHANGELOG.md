@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a synthetic-only signer trust policy schema/parser for issue #62. It
+  validates local `env:`/`file:` key references, rejects duplicate or embedded
+  key material, and does not implement key resolution, signing, or verification.
+
 ## 0.4.2 - 2026-06-13
 
 - Update installation documentation after the first verified PyPI publication.

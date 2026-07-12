@@ -1,9 +1,10 @@
 # Signer trust, rotation, and revocation policy
 
-This document is a design proposal for issue
-[#53](https://github.com/xodnr927-byte/repro-evidence-kit/issues/53).
-It does not add a new verification mode or change the current
-`signature_version: "1.0"` sidecar format.
+This document is the design boundary for issue
+[#53](https://github.com/xodnr927-byte/repro-evidence-kit/issues/53) and its
+implementation slices. Issue [#62](https://github.com/xodnr927-byte/repro-evidence-kit/issues/62)
+adds the local policy schema/parser only; it does not add a new verification
+mode or change the current `signature_version: "1.0"` sidecar format.
 
 ## Decision summary
 
@@ -98,11 +99,12 @@ Required key fields:
 | `state` | One of `active`, `verify_only`, or `revoked`. |
 | `not_before` | Earliest policy time at which the key may be used. |
 
-Optional key fields may include `revoked_at` and a short `comment`. A first
-implementation should reject unknown security-sensitive fields rather than
-silently ignoring them. It should also reject duplicate `key_id` values,
-embedded key bytes, unsupported resolver schemes, malformed timestamps, and
-contradictory state/timestamp combinations.
+Optional key fields may include `revoked_at` and a short `comment`. The #62
+parser rejects unknown fields rather than silently ignoring them. It also
+rejects duplicate document keys, duplicate `key_id` values, embedded key
+bytes, unsupported resolver schemes, malformed timestamps, and contradictory
+state/timestamp combinations. It returns parsed data only; it does not resolve
+key material or authorize a signer.
 
 ## Key selection and authorization
 
@@ -207,7 +209,10 @@ Implementation should remain split into independently reviewable work:
 
 1. Freeze the threat model, policy state machine, and version 1 compatibility
    rules.
-2. Add a schema and parser for non-secret policy documents only.
+2. Add a schema and parser for non-secret policy documents only. This is
+   implemented by `repro_evidence_kit.trust_policy` and the packaged
+   `trust-policy.schema.json` copies; resolver and authorization behavior remain
+   separate follow-up work.
 3. Add resolver interfaces with synthetic environment/file fixtures.
 4. Add policy-aware verification and stable structured error categories.
 5. Add policy-aware signing only after verification behavior is reviewed.
