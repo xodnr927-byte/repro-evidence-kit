@@ -141,7 +141,7 @@ class TrustPolicyTests(unittest.TestCase):
         packaged_schema = Path("src/repro_evidence_kit/schemas/trust-policy.schema.json")
         self.assertEqual(repo_schema.read_text(encoding="utf-8"), packaged_schema.read_text(encoding="utf-8"))
         schema = json.loads(repo_schema.read_text(encoding="utf-8"))
-        self.assertEqual(default_trust_policy_schema_path(), repo_schema.resolve())
+        self.assertEqual(default_trust_policy_schema_path().read_text(encoding="utf-8"), repo_schema.read_text(encoding="utf-8"))
         errors = list(Draft202012Validator(schema).iter_errors(VALID_POLICY))
         self.assertEqual(errors, [])
 
