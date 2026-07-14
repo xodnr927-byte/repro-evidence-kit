@@ -134,6 +134,23 @@ would move signer selection into attacker-controlled input.
 Signing should require an `active` key. Verification may use `active` or
 `verify_only`; it must reject `revoked`.
 
+## Local key resolvers
+
+`repro_evidence_kit.key_resolver` resolves only parser-approved `env:` and
+`file:` references. Environment values become UTF-8 bytes; files are read as
+exact bytes without trimming or decoding. Empty material, missing references,
+unreadable files, malformed references, unsupported schemes, and multiple
+resolvers claiming the same scheme fail closed with stable
+`KeyResolutionError.code` values.
+
+Absolute file references use the default file resolver. A relative file
+reference requires an explicit `FileKeyResolver(base_directory=...)`; it never
+falls back to the process working directory.
+
+Resolution returns key bytes only. It does not select a policy key, authorize a
+key state, verify a signature, or permit signing. Fixtures remain synthetic;
+policy files and repository content must not contain live key material.
+
 ## Rotation
 
 Rotation uses an explicit overlap period:
@@ -213,7 +230,9 @@ Implementation should remain split into independently reviewable work:
    implemented by `repro_evidence_kit.trust_policy` and the packaged
    `trust-policy.schema.json` copies; resolver and authorization behavior remain
    separate follow-up work.
-3. Add resolver interfaces with synthetic environment/file fixtures.
+3. Add resolver interfaces with synthetic environment/file fixtures. This is
+   implemented by `repro_evidence_kit.key_resolver`; authorization, signing,
+   and verification remain separate.
 4. Add policy-aware verification and stable structured error categories.
 5. Add policy-aware signing only after verification behavior is reviewed.
 

@@ -54,10 +54,10 @@
 - Review future changes against the v0.4.2 file-safety and validation contracts.
 - Design signer trust, key rotation, and revocation policy in
   [issue #53](https://github.com/xodnr927-byte/repro-evidence-kit/issues/53)
-  before expanding the signed-sidecar prototype. The current proposal is
-  documented in
-  [docs/signer-trust-policy.md](docs/signer-trust-policy.md) for review; no
-  policy-aware implementation is included.
+  before expanding the signed-sidecar prototype. The policy parser and local
+  synthetic `env:`/`file:` resolver interfaces are documented in
+  [docs/signer-trust-policy.md](docs/signer-trust-policy.md); policy-aware
+  verification and signing remain separate follow-up work.
 
 ## Later ideas
 
