@@ -95,9 +95,10 @@ class KeyResolverTests(unittest.TestCase):
 
     def test_fails_closed_for_unreadable_file(self):
         resolver = FileKeyResolver()
+        key_ref = f"file:{Path.cwd() / 'synthetic.key'}"
         with mock.patch("pathlib.Path.read_bytes", side_effect=PermissionError("denied")):
             with self.assertRaises(KeyResolutionError) as raised:
-                resolve_key_reference("file:/synthetic.key", resolvers=(resolver,))
+                resolve_key_reference(key_ref, resolvers=(resolver,))
         self.assertEqual(raised.exception.code, "key_reference_unreadable")
 
     def test_fails_closed_for_empty_or_non_byte_material(self):
