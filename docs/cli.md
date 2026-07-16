@@ -121,6 +121,22 @@ repro-evidence evidence verify-signature examples/evidence-bundle.yaml \
   --key local-test.key
 ```
 
+Policy-aware verification requires both a caller-selected policy and expected
+key identity:
+
+```bash
+repro-evidence evidence verify-signature examples/evidence-bundle.yaml \
+  --signature examples/evidence-bundle.yaml.sig.json \
+  --trust-policy trust-policy.yaml \
+  --key-id expected-key
+```
+
+`--key` and `--trust-policy` are mutually exclusive. Policy mode never selects
+a key from the sidecar's advisory `key_hint` and never falls back to `--key`.
+Relative `file:` references are resolved from the policy file's directory.
+Trust or signature failures exit `1`; malformed policy and key-resolution
+infrastructure failures exit `2` with structured result codes.
+
 Use `--format text` for maintainer-friendly CI logs, or keep the default JSON for machine-readable output. JSON results include `errors` plus structured `error_details` with stable categories such as `payload_hash_mismatch`, `signature_mismatch`, `unsupported_signature_version`, `unsupported_algorithm`, `missing_signature`, and parse/read failures as exit code `2`.
 
 Use `--schema` to validate the sidecar shape against `schemas/signature-sidecar.schema.json` when the optional `jsonschema` dependency is installed.

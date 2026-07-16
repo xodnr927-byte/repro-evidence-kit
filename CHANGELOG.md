@@ -8,6 +8,9 @@
 - Add synthetic-only local `env:`/`file:` key resolver interfaces for issue #63
   with stable fail-closed errors. Resolution does not authorize policy state,
   sign, verify, or establish signer identity.
+- Add policy-aware signature verification for issue #64 with caller-selected
+  policy/key identity, fail-closed state and resolver checks, and stable result
+  categories. Sidecar `key_hint` remains advisory and signing is unchanged.
 
 ## 0.4.2 - 2026-06-13
 

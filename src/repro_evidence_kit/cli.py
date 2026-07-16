@@ -7,7 +7,15 @@ from pathlib import Path
 from . import __version__
 from .evidence import evidence_result_as_junit, load_evidence, validate_evidence_bundle, validate_evidence_bundle_schema, validate_signature_sidecar_schema
 from .manifest import create_manifest, diff_manifests, load_manifest, write_json, write_text
+from .policy_verification import (
+    default_policy_resolvers,
+    policy_verification_exit_code,
+    selected_policy_key_file,
+    trust_policy_error_result,
+    verify_bundle_signature_with_policy,
+)
 from .signing import load_signature_sidecar, sign_bundle, signature_verification_as_text, verify_bundle_signature
+from .trust_policy import TrustPolicyError, load_trust_policy
 from .verify import sandbox_result_as_junit, sandbox_result_as_sarif, verify_sandbox_output
 
 
@@ -86,7 +94,10 @@ def build_parser() -> argparse.ArgumentParser:
     verify_sig = evidence_sub.add_parser("verify-signature", help="Verify an evidence bundle signature sidecar")
     verify_sig.add_argument("bundle", type=Path)
     verify_sig.add_argument("--signature", required=True, type=Path, help="Signature sidecar JSON")
-    verify_sig.add_argument("--key", required=True, type=Path, help="Local synthetic or trusted HMAC key file")
+    verification_key = verify_sig.add_mutually_exclusive_group(required=True)
+    verification_key.add_argument("--key", type=Path, help="Legacy local HMAC key file")
+    verification_key.add_argument("--trust-policy", type=Path, help="Local signer trust policy YAML/JSON")
+    verify_sig.add_argument("--key-id", help="Expected policy key identity selected by the caller")
     verify_sig.add_argument("--format", choices=("json", "text"), default="json")
     verify_sig.add_argument("--schema", action="store_true", help="Also validate the signature sidecar shape with schemas/signature-sidecar.schema.json")
     verify_sig.add_argument("--schema-path", type=Path, help="Use a custom JSON Schema path with --schema")
@@ -163,10 +174,36 @@ def main(argv: list[str] | None = None) -> int:
                 args.bundle,
                 args.signature,
                 args.key,
+                args.trust_policy,
                 args.schema_path,
             )
             sidecar = load_signature_sidecar(args.signature)
-            signature_result = verify_bundle_signature(args.bundle, sidecar, args.key)
+            if args.trust_policy is not None:
+                if args.key_id is None:
+                    raise ValueError("--trust-policy requires --key-id")
+                if not args.key_id or args.key_id != args.key_id.strip() or any(char.isspace() or ord(char) == 127 for char in args.key_id):
+                    raise ValueError("--key-id must be a non-empty identifier without whitespace or control characters")
+                try:
+                    policy = load_trust_policy(args.trust_policy)
+                except TrustPolicyError as exc:
+                    signature_result = trust_policy_error_result(sidecar, args.key_id, exc)
+                else:
+                    _ensure_output_does_not_overwrite_input(
+                        args.output,
+                        selected_policy_key_file(policy, args.key_id, args.trust_policy),
+                    )
+                    signature_result = verify_bundle_signature_with_policy(
+                        args.bundle,
+                        sidecar,
+                        policy,
+                        args.key_id,
+                        resolvers=default_policy_resolvers(args.trust_policy),
+                    )
+            else:
+                if args.key_id is not None:
+                    raise ValueError("--key-id requires --trust-policy")
+                assert args.key is not None
+                signature_result = verify_bundle_signature(args.bundle, sidecar, args.key)
             if args.schema:
                 schema_result = validate_signature_sidecar_schema(sidecar, args.schema_path)
                 signature_result["schema"] = schema_result
@@ -175,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
                 write_text(signature_verification_as_text(signature_result), args.output)
             else:
                 write_json(signature_result, args.output)
-            return 0 if signature_result["ok"] else 1
+            return policy_verification_exit_code(signature_result)
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

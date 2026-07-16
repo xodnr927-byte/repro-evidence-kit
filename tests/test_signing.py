@@ -89,6 +89,17 @@ class SigningTests(unittest.TestCase):
         self.assertIn("missing signature", result["errors"])
         self.assertEqual(result["error_details"][-1]["code"], "missing_signature")
 
+    def test_missing_signature_does_not_read_legacy_key(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            bundle = root / "evidence-bundle.yaml"
+            bundle.write_text("title: Synthetic\n", encoding="utf-8")
+
+            result = verify_bundle_signature(bundle, {"signature_version": "1.0", "algorithm": "hmac-sha256"}, root / "missing.key")
+
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error_details"][-1]["code"], "missing_signature")
+
     def test_verify_rejects_invalid_payload_hash_shape(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

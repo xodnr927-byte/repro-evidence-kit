@@ -55,9 +55,10 @@
 - Design signer trust, key rotation, and revocation policy in
   [issue #53](https://github.com/xodnr927-byte/repro-evidence-kit/issues/53)
   before expanding the signed-sidecar prototype. The policy parser and local
-  synthetic `env:`/`file:` resolver interfaces are documented in
-  [docs/signer-trust-policy.md](docs/signer-trust-policy.md); policy-aware
-  verification and signing remain separate follow-up work.
+  synthetic `env:`/`file:` resolver interfaces and caller-selected policy-aware
+  verification are documented in
+  [docs/signer-trust-policy.md](docs/signer-trust-policy.md). Policy-aware
+  signing remains separate follow-up work.
 
 ## Later ideas
 

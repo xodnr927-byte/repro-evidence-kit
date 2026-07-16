@@ -25,7 +25,10 @@ class KeyResolutionError(ValueError):
 class KeyResolver(Protocol):
     """Interface for one local, parser-approved key-reference scheme."""
 
-    scheme: str
+    @property
+    def scheme(self) -> str:
+        """Resolver scheme claimed by this implementation."""
+        ...
 
     def resolve(self, reference: str) -> bytes:
         """Return the exact key bytes for the scheme-specific reference."""

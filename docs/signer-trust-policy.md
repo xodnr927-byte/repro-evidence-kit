@@ -233,7 +233,9 @@ Implementation should remain split into independently reviewable work:
 3. Add resolver interfaces with synthetic environment/file fixtures. This is
    implemented by `repro_evidence_kit.key_resolver`; authorization, signing,
    and verification remain separate.
-4. Add policy-aware verification and stable structured error categories.
+4. Add policy-aware verification and stable structured error categories. This
+   is implemented by `repro_evidence_kit.policy_verification` and the
+   `verify-signature --trust-policy ... --key-id ...` CLI mode.
 5. Add policy-aware signing only after verification behavior is reviewed.
 
 Each implementation slice must retain synthetic-only fixtures and must not claim
