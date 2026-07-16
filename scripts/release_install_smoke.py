@@ -53,12 +53,49 @@ def main(argv: list[str] | None = None) -> int:
         bundle = root / "evidence-bundle.yaml"
         key = root / "local-test.key"
         signature = root / "evidence-bundle.yaml.sig.json"
+        policy = root / "trust-policy.yaml"
         bundle.write_text("schema_version: '1.0'\ntitle: Synthetic\ninputs: []\ncommands: []\noutputs: []\n", encoding="utf-8")
         key.write_text("synthetic local test key only\n", encoding="utf-8")
+        policy.write_text(
+            "policy_version: '1.0'\npolicy_id: release-smoke-policy\nkeys:\n"
+            "  - key_id: local-synthetic\n    algorithm: hmac-sha256\n"
+            f"    key_ref: file:{key.name}\n    state: verify_only\n"
+            "    not_before: '2026-01-01T00:00:00Z'\n",
+            encoding="utf-8",
+        )
         run([str(repro), "evidence", "sign", str(bundle), "--key", str(key), "--key-hint", "local-synthetic", "-o", str(signature)])
         run([str(repro), "evidence", "verify-signature", str(bundle), "--signature", str(signature), "--key", str(key)])
+        run(
+            [
+                str(repro),
+                "evidence",
+                "verify-signature",
+                str(bundle),
+                "--signature",
+                str(signature),
+                "--trust-policy",
+                str(policy),
+                "--key-id",
+                "local-synthetic",
+            ]
+        )
         bundle.write_text(bundle.read_text(encoding="utf-8") + "tamper: true\n", encoding="utf-8")
         run([str(repro), "evidence", "verify-signature", str(bundle), "--signature", str(signature), "--key", str(key)], expect=1)
+        run(
+            [
+                str(repro),
+                "evidence",
+                "verify-signature",
+                str(bundle),
+                "--signature",
+                str(signature),
+                "--trust-policy",
+                str(policy),
+                "--key-id",
+                "local-synthetic",
+            ],
+            expect=1,
+        )
 
     print("release/install smoke checks passed")
     return 0

@@ -5,7 +5,7 @@ import hmac
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 SIGNATURE_VERSION = "1.0"
 ALGORITHM = "hmac-sha256"
@@ -70,6 +70,17 @@ def _append_error(errors: list[str], details: list[dict[str, Any]], code: str, *
 
 
 def verify_bundle_signature(bundle_path: Path, sidecar: dict[str, Any], key_path: Path) -> dict[str, Any]:
+    return _verify_bundle_signature(bundle_path, sidecar, lambda: load_key(key_path))
+
+
+def verify_bundle_signature_with_key(bundle_path: Path, sidecar: dict[str, Any], key: bytes) -> dict[str, Any]:
+    """Verify exact bundle bytes with already-resolved non-empty key material."""
+    if not key:
+        raise ValueError("verification key is empty")
+    return _verify_bundle_signature(bundle_path, sidecar, lambda: key)
+
+
+def _verify_bundle_signature(bundle_path: Path, sidecar: dict[str, Any], load_verification_key: Callable[[], bytes]) -> dict[str, Any]:
     errors: list[str] = []
     details: list[dict[str, Any]] = []
     if sidecar.get("signature_version") != SIGNATURE_VERSION:
@@ -104,7 +115,7 @@ def verify_bundle_signature(bundle_path: Path, sidecar: dict[str, Any], key_path
     elif not _HEX64.match(signature):
         _append_error(errors, details, "invalid_signature", field="signature", expected="64 lowercase hex characters", actual=signature)
     else:
-        expected = hmac.new(load_key(key_path), payload, hashlib.sha256).hexdigest()
+        expected = hmac.new(load_verification_key(), payload, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(signature, expected):
             _append_error(errors, details, "signature_mismatch", field="signature", expected=expected, actual=signature)
 
@@ -125,6 +136,12 @@ def signature_verification_as_text(result: dict[str, Any]) -> str:
         lines.append(f"algorithm: {result['algorithm']}")
     if result.get("key_hint"):
         lines.append(f"key_hint: {result['key_hint']}")
+    if result.get("policy_id"):
+        lines.append(f"policy_id: {result['policy_id']}")
+    if result.get("key_id"):
+        lines.append(f"key_id: {result['key_id']}")
+    if result.get("policy_state"):
+        lines.append(f"policy_state: {result['policy_state']}")
     if result.get("payload_path"):
         lines.append(f"payload_path: {result['payload_path']}")
     if result.get("payload_sha256"):
