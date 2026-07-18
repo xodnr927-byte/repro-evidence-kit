@@ -111,6 +111,23 @@ repro-evidence evidence sign examples/evidence-bundle.yaml \
 
 The key file is local trust material. Do not commit live secrets or real maintainer private keys. The prototype algorithm is `hmac-sha256`, intended for local tamper detection and synthetic examples. Use `--dry-run` to print the sidecar that would be written without creating an output file.
 
+Policy-aware signing requires a caller-selected trust policy and key identity:
+
+```bash
+repro-evidence evidence sign examples/evidence-bundle.yaml \
+  --trust-policy trust-policy.yaml \
+  --key-id expected-key \
+  -o examples/evidence-bundle.yaml.sig.json
+```
+
+`--key` and `--trust-policy` are mutually exclusive. Policy mode permits only
+an `active` key whose `not_before` time has passed; `verify_only`, `revoked`,
+unknown, and not-yet-active keys fail before key resolution. Relative `file:`
+references resolve from the policy directory. The version 1 sidecar stays
+unchanged, and `key_hint` remains advisory metadata rather than authorization
+or public identity proof. Trust failures exit `1`; policy parse and key
+resolution failures exit `2` with stable error codes on stderr.
+
 ## `evidence verify-signature`
 
 Verify that a sidecar signature still matches the exact evidence bundle bytes and local key.

@@ -14,6 +14,7 @@ from .policy_verification import (
     trust_policy_error_result,
     verify_bundle_signature_with_policy,
 )
+from .policy_signing import PolicySigningError, policy_signing_exit_code, sign_bundle_with_policy
 from .signing import load_signature_sidecar, sign_bundle, signature_verification_as_text, verify_bundle_signature
 from .trust_policy import TrustPolicyError, load_trust_policy
 from .verify import sandbox_result_as_junit, sandbox_result_as_sarif, verify_sandbox_output
@@ -86,7 +87,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     sign = evidence_sub.add_parser("sign", help="Sign exact evidence bundle bytes with a local key")
     sign.add_argument("bundle", type=Path)
-    sign.add_argument("--key", required=True, type=Path, help="Local synthetic or trusted HMAC key file")
+    signing_key = sign.add_mutually_exclusive_group(required=True)
+    signing_key.add_argument("--key", type=Path, help="Legacy local HMAC key file")
+    signing_key.add_argument("--trust-policy", type=Path, help="Local signer trust policy YAML/JSON")
+    sign.add_argument("--key-id", help="Policy key identity selected by the caller")
     sign.add_argument("--key-hint", help="Non-secret key identifier to record in the sidecar")
     sign.add_argument("-o", "--output", type=Path)
     sign.add_argument("--dry-run", action="store_true", help="Print the sidecar that would be written without creating an output file")
@@ -158,14 +162,35 @@ def main(argv: list[str] | None = None) -> int:
                 write_json(evidence_result, args.output)
             return 0 if evidence_result["ok"] else 1
         if args.command == "evidence" and args.evidence_command == "sign":
-            if args.dry_run:
+            if args.output is None:
+                if not args.dry_run:
+                    raise ValueError("evidence sign requires -o/--output unless --dry-run is used")
+            _ensure_output_does_not_overwrite_input(args.output, args.bundle, args.key, args.trust_policy)
+            if args.trust_policy is not None:
+                if args.key_id is None:
+                    raise ValueError("--trust-policy requires --key-id")
+                if not args.key_id or args.key_id != args.key_id.strip() or any(char.isspace() or ord(char) == 127 for char in args.key_id):
+                    raise ValueError("--key-id must be a non-empty identifier without whitespace or control characters")
+                policy = load_trust_policy(args.trust_policy)
+                _ensure_output_does_not_overwrite_input(
+                    args.output,
+                    selected_policy_key_file(policy, args.key_id, args.trust_policy),
+                )
+                sidecar = sign_bundle_with_policy(
+                    args.bundle,
+                    policy,
+                    args.key_id,
+                    key_hint=args.key_hint,
+                    resolvers=default_policy_resolvers(args.trust_policy),
+                )
+            else:
+                if args.key_id is not None:
+                    raise ValueError("--key-id requires --trust-policy")
+                assert args.key is not None
                 sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
+            if args.dry_run:
                 write_json(sidecar, None)
                 return 0
-            if args.output is None:
-                raise ValueError("evidence sign requires -o/--output unless --dry-run is used")
-            _ensure_output_does_not_overwrite_input(args.output, args.bundle, args.key)
-            sidecar = sign_bundle(args.bundle, args.key, key_hint=args.key_hint)
             write_json(sidecar, args.output)
             return 0
         if args.command == "evidence" and args.evidence_command == "verify-signature":
@@ -213,6 +238,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 write_json(signature_result, args.output)
             return policy_verification_exit_code(signature_result)
+    except PolicySigningError as exc:
+        cause = f" (cause: {exc.cause_code})" if exc.cause_code else ""
+        print(f"error: {exc}{cause}", file=sys.stderr)
+        return policy_signing_exit_code(exc)
+    except TrustPolicyError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     except Exception as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

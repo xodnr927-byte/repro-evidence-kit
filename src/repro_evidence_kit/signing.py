@@ -42,15 +42,22 @@ def load_signature_sidecar(path: Path) -> dict[str, Any]:
 
 
 def sign_bundle(bundle_path: Path, key_path: Path, *, key_hint: str | None = None) -> dict[str, Any]:
-    payload = bundle_path.read_bytes()
     key = load_key(key_path)
+    return sign_bundle_with_key(bundle_path, key, key_hint=key_hint or key_path.name)
+
+
+def sign_bundle_with_key(bundle_path: Path, key: bytes, *, key_hint: str) -> dict[str, Any]:
+    """Sign exact bundle bytes with already-resolved non-empty key material."""
+    if not key:
+        raise ValueError("signing key is empty")
+    payload = bundle_path.read_bytes()
     signature = hmac.new(key, payload, hashlib.sha256).hexdigest()
     return {
         "signature_version": SIGNATURE_VERSION,
         "payload_path": bundle_path.name,
         "payload_sha256": sha256_bytes(payload),
         "algorithm": ALGORITHM,
-        "key_hint": key_hint or key_path.name,
+        "key_hint": key_hint,
         "signature": signature,
     }
 

@@ -58,7 +58,8 @@
   synthetic `env:`/`file:` resolver interfaces and caller-selected policy-aware
   verification are documented in
   [docs/signer-trust-policy.md](docs/signer-trust-policy.md). Policy-aware
-  signing remains separate follow-up work.
+  signing now permits only caller-selected `active` keys while preserving the
+  version 1 sidecar boundary.
 
 ## Later ideas
 

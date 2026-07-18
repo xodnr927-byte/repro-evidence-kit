@@ -94,6 +94,10 @@ See `examples/signed-bundle/README.md` for a minimal synthetic workflow.
 For the proposed caller-selected signer policy, key rotation, revocation
 semantics, and version 1 compatibility boundary, see
 [Signer trust, rotation, and revocation policy](signer-trust-policy.md).
+Policy-aware signing is available through `evidence sign` with
+`--trust-policy ... --key-id ...`; it resolves only a caller-selected `active`
+policy key and does not change the version 1 sidecar or elevate `key_hint` into
+authorization.
 
 ## Test fixture policy
 

@@ -131,8 +131,11 @@ The verifier must not choose a key from `key_hint`, try every configured key
 until one succeeds, or treat a matching hint as authorization. Those behaviors
 would move signer selection into attacker-controlled input.
 
-Signing should require an `active` key. Verification may use `active` or
-`verify_only`; it must reject `revoked`.
+Signing requires an `active` key selected by the caller through
+`evidence sign --trust-policy ... --key-id ...`. Verification may use `active`
+or `verify_only`; both operations reject `revoked`. Policy-aware signing keeps
+the version 1 sidecar unchanged and uses `key_id` only as the default advisory
+`key_hint`; authorization is completed before that sidecar is created.
 
 ## Local key resolvers
 
@@ -236,7 +239,10 @@ Implementation should remain split into independently reviewable work:
 4. Add policy-aware verification and stable structured error categories. This
    is implemented by `repro_evidence_kit.policy_verification` and the
    `verify-signature --trust-policy ... --key-id ...` CLI mode.
-5. Add policy-aware signing only after verification behavior is reviewed.
+5. Add policy-aware signing only after verification behavior is reviewed. This
+   is implemented by `repro_evidence_kit.policy_signing` and the
+   `evidence sign --trust-policy ... --key-id ...` CLI mode; only `active` keys
+   can sign.
 
 Each implementation slice must retain synthetic-only fixtures and must not claim
 signer identity, artifact correctness, or trusted signing time.

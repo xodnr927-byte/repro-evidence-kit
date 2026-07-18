@@ -11,6 +11,9 @@
 - Add policy-aware signature verification for issue #64 with caller-selected
   policy/key identity, fail-closed state and resolver checks, and stable result
   categories. Sidecar `key_hint` remains advisory and signing is unchanged.
+- Add policy-aware signing for issue #65 with caller-selected policy/key
+  identity, active-only authorization, local key resolution, stable failure
+  codes, and unchanged version 1 sidecars. `key_hint` remains advisory.
 
 ## 0.4.2 - 2026-06-13
 
