@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 import tempfile
@@ -53,18 +54,51 @@ def main(argv: list[str] | None = None) -> int:
         bundle = root / "evidence-bundle.yaml"
         key = root / "local-test.key"
         signature = root / "evidence-bundle.yaml.sig.json"
+        policy_signature = root / "evidence-bundle.policy.sig.json"
+        disallowed_signature = root / "evidence-bundle.disallowed.sig.json"
         policy = root / "trust-policy.yaml"
         bundle.write_text("schema_version: '1.0'\ntitle: Synthetic\ninputs: []\ncommands: []\noutputs: []\n", encoding="utf-8")
         key.write_text("synthetic local test key only\n", encoding="utf-8")
         policy.write_text(
             "policy_version: '1.0'\npolicy_id: release-smoke-policy\nkeys:\n"
             "  - key_id: local-synthetic\n    algorithm: hmac-sha256\n"
-            f"    key_ref: file:{key.name}\n    state: verify_only\n"
+            f"    key_ref: file:{key.name}\n    state: active\n"
             "    not_before: '2026-01-01T00:00:00Z'\n",
             encoding="utf-8",
         )
         run([str(repro), "evidence", "sign", str(bundle), "--key", str(key), "--key-hint", "local-synthetic", "-o", str(signature)])
         run([str(repro), "evidence", "verify-signature", str(bundle), "--signature", str(signature), "--key", str(key)])
+        run(
+            [
+                str(repro),
+                "evidence",
+                "sign",
+                str(bundle),
+                "--trust-policy",
+                str(policy),
+                "--key-id",
+                "local-synthetic",
+                "-o",
+                str(policy_signature),
+            ]
+        )
+        policy_sidecar = json.loads(policy_signature.read_text(encoding="utf-8"))
+        if policy_sidecar.get("signature_version") != "1.0":
+            raise SystemExit("policy signing smoke did not create a version 1 sidecar")
+        run(
+            [
+                str(repro),
+                "evidence",
+                "verify-signature",
+                str(bundle),
+                "--signature",
+                str(policy_signature),
+                "--trust-policy",
+                str(policy),
+                "--key-id",
+                "local-synthetic",
+            ]
+        )
         run(
             [
                 str(repro),
@@ -79,6 +113,24 @@ def main(argv: list[str] | None = None) -> int:
                 "local-synthetic",
             ]
         )
+        policy.write_text(policy.read_text(encoding="utf-8").replace("state: active", "state: verify_only"), encoding="utf-8")
+        disallowed = run(
+            [
+                str(repro),
+                "evidence",
+                "sign",
+                str(bundle),
+                "--trust-policy",
+                str(policy),
+                "--key-id",
+                "local-synthetic",
+                "-o",
+                str(disallowed_signature),
+            ],
+            expect=1,
+        )
+        if "key_not_allowed_for_signing" not in disallowed.stderr or disallowed_signature.exists():
+            raise SystemExit("disallowed policy signing smoke did not fail closed")
         bundle.write_text(bundle.read_text(encoding="utf-8") + "tamper: true\n", encoding="utf-8")
         run([str(repro), "evidence", "verify-signature", str(bundle), "--signature", str(signature), "--key", str(key)], expect=1)
         run(
