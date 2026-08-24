@@ -29,6 +29,25 @@ class ManifestTests(unittest.TestCase):
             manifest = create_manifest(root)
         self.assertEqual(manifest["files"][0]["path"], "logs/run.txt")
 
+    def test_create_manifest_handles_paths_beyond_windows_max_path(self):
+        windows_max_path = 260
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            current = root
+            segments: list[str] = []
+            while len(str(current / "artifact.txt")) <= windows_max_path:
+                segment = f"segment-{len(segments):03d}-" + ("x" * 32)
+                current /= segment
+                current.mkdir()
+                segments.append(segment)
+            artifact = current / "artifact.txt"
+            artifact.write_text("artifact\n", encoding="utf-8")
+            manifest = create_manifest(root)
+
+        self.assertGreater(len(str(artifact)), windows_max_path)
+        self.assertEqual(manifest["file_count"], 1)
+        self.assertEqual(manifest["files"][0]["path"], f"{'/'.join(segments)}/artifact.txt")
+
     def test_diff_manifests(self):
         before = {"files": [{"path": "a.txt", "size": 1, "sha256": "0" * 64}]}
         after = {"files": [{"path": "a.txt", "size": 2, "sha256": "1" * 64}, {"path": "b.txt", "size": 1, "sha256": "2" * 64}]}
