@@ -23,6 +23,25 @@
 - Dependency auditing, CycloneDX SBOM artifacts, Dependabot, and release build provenance.
 - Boundary coverage for permission failures, large trees, Unicode paths, and corrupted structured inputs.
 
+### v0.4.3
+
+- Added the synthetic-only signer trust policy parser/schema and local
+  `env:`/`file:` resolver interfaces.
+- Added caller-selected, policy-aware signature verification and signing while
+  preserving the version 1 sidecar format and advisory-only `key_hint`.
+- Added installed-package smoke coverage for legacy and policy-aware signing
+  and verification, including fail-closed disallowed-key behavior.
+- Added the fail-closed empty-filtered-manifest guard with explicit
+  `--allow-empty` opt-in.
+- Clarified manifest determinism and provenance boundaries, including built-in
+  directory-exclusion metadata and the non-deterministic `created_at` field.
+- Added narrow Windows/Python 3.12 filesystem-contract coverage, including a
+  manifest path beyond the Windows `MAX_PATH` boundary; this does not claim
+  universal Windows support.
+- Added the canonical Apache 2.0 license, community-health guidance,
+  release-governance and external-review documentation, narrow release/PyPI
+  evidence, and maintained sandbox-policy SARIF workflow coverage.
+
 ### v0.4.1
 
 - PyPI publication completed.
@@ -52,14 +71,9 @@
 
 - Keep examples synthetic-only.
 - Review future changes against the v0.4.2 file-safety and validation contracts.
-- Design signer trust, key rotation, and revocation policy in
-  [issue #53](https://github.com/xodnr927-byte/repro-evidence-kit/issues/53)
-  before expanding the signed-sidecar prototype. The policy parser and local
-  synthetic `env:`/`file:` resolver interfaces and caller-selected policy-aware
-  verification are documented in
-  [docs/signer-trust-policy.md](docs/signer-trust-policy.md). Policy-aware
-  signing now permits only caller-selected `active` keys while preserving the
-  version 1 sidecar boundary.
+- Preserve the documented signer-trust boundaries when considering future
+  rotation or revocation work: caller-selected identity, local key references,
+  and the version 1 sidecar limitations remain explicit.
 
 ## Later ideas
 
