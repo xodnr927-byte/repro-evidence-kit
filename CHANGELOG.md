@@ -2,9 +2,14 @@
 
 ## Unreleased
 
+- No unreleased changes.
+
+## 0.4.3 - 2026-09-07
+
 - Add a synthetic-only signer trust policy schema/parser for issue #62. It
   validates local `env:`/`file:` key references, rejects duplicate or embedded
-  key material, and does not implement key resolution, signing, or verification.
+  key material, and keeps policy parsing separate from authorization and
+  cryptographic operations.
 - Add synthetic-only local `env:`/`file:` key resolver interfaces for issue #63
   with stable fail-closed errors. Resolution does not authorize policy state,
   sign, verify, or establish signer identity.
@@ -14,6 +19,21 @@
 - Add policy-aware signing for issue #65 with caller-selected policy/key
   identity, active-only authorization, local key resolution, stable failure
   codes, and unchanged version 1 sidecars. `key_hint` remains advisory.
+- Add installed-package smoke coverage for legacy and policy-aware signing and
+  verification, including fail-closed disallowed-key behavior.
+- Reject empty filtered manifests by default, with an explicit `--allow-empty`
+  escape hatch.
+- Clarify manifest determinism and provenance boundaries, including built-in
+  directory-exclusion metadata and the non-deterministic `created_at` field;
+  hashes do not establish semantic correctness.
+- Add required Windows/Python 3.12 filesystem-contract CI and regression
+  coverage for manifest paths beyond the Windows `MAX_PATH` boundary. This is
+  narrow contract coverage, not a claim of universal Windows support.
+- Add synthetic sandbox-policy SARIF upload coverage and refresh the maintained
+  GitHub Actions workflow examples and action versions.
+- Add the canonical Apache 2.0 license, support and code-of-conduct guidance,
+  and release-governance, external-review, and narrow release/PyPI evidence
+  documentation for maintainer review.
 
 ## 0.4.2 - 2026-06-13
 
